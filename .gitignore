@@ -1,0 +1,136 @@
+# Python bytecode and interpreter caches
+__pycache__/
+*.py[codz]
+*$py.class
+
+# Native extensions
+*.so
+*.pyd
+*.dll
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+__pypackages__/
+
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+.envrc
+secrets/
+.secrets/
+*.pem
+*.key
+
+# Packaging and build output
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Test, coverage, and quality-tool caches
+.pytest_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.cover
+*.py.cover
+*.lcov
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Jupyter and IPython
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# Local databases and database sidecars
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Runtime files produced by DocSense
+/uploads/
+/ml_mock_service.py
+*.log
+*.pid
+
+# ML models, checkpoints, and experiment output
+*.pt
+*.pth
+*.onnx
+*.joblib
+*.pkl
+/artifacts/
+/checkpoints/
+/runs/
+/wandb/
+
+# Visual Studio Code (current settings are machine- and Windows-specific)
+.vscode/
+*.code-workspace
+*.vsix
+
+# Other editors and IDEs
+.idea/
+.spyderproject
+.spyproject
+.ropeproject
+*.swp
+*.swo
+*~
+tempCodeRunnerFile.py
+
+# Operating-system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary and backup files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
