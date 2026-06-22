@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from docsense.data_base.models import Document
+from docsense.data_base.models import Document, DocumentStatus
 
 def create_document(db:Session,original_filename:str,
                     stored_filename: str,
@@ -18,3 +18,12 @@ def get_documents(db: Session) -> list[Document]:
 
 def delete_document(db: Session, document: Document) -> None:
   db.delete(document)
+  
+def update_document_analysis(
+  document: Document,
+  status: DocumentStatus,
+  topic: str|None,
+) -> Document:
+  document.status = status
+  document.topic = topic
+  return document
