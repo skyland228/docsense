@@ -3,7 +3,8 @@ from fastapi.responses import FileResponse, FileResponse
 from sqlalchemy.orm import Session
 from docsense.dependencies import get_db
 from docsense.services import documents_service
-from docsense.schemas import DocumentUploadResponse
+from docsense.schemas import DocumentResponse, DocumentUploadResponse
+
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 @router.post("/upload",response_model=DocumentUploadResponse)
@@ -17,3 +18,6 @@ def download_document( document_id: int,db: Session = Depends(get_db)):
         path=document.file_path,
         filename=document.original_filename,   
     )
+@router.get("",response_model=list[DocumentResponse])
+def get_documents(db: Session = Depends(get_db)):
+    return documents_service.get_documents(db)

@@ -25,5 +25,7 @@ def get_document_file(db:Session,id:int) -> Document:
   file_path = Path(document.file_path)
   if not file_path.exists():
     raise HTTPException(status_code=404,detail='Document file not found')
-  
   return document
+
+def get_documents(db: Session) -> list[Document]:
+  return documents_repository.get_documents(db)
