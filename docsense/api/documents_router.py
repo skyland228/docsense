@@ -18,6 +18,10 @@ def download_document( document_id: int,db: Session = Depends(get_db)):
         path=document.file_path,
         filename=document.original_filename,   
     )
+@router.delete('/{document_id}/delete')
+def delete_document(document_id: int,db: Session = Depends(get_db)):
+    return documents_service.delete_document(db,document_id)
+
 @router.get("",response_model=list[DocumentResponse])
 def get_documents(db: Session = Depends(get_db)):
     return documents_service.get_documents(db)

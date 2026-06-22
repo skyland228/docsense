@@ -15,3 +15,6 @@ def get_document(db:Session,document_id:int) -> Document | None:
 
 def get_documents(db: Session) -> list[Document]:
   return db.query(Document).all()
+
+def delete_document(db: Session, document: Document) -> None:
+  db.delete(document)
