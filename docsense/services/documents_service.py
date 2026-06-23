@@ -2,9 +2,9 @@ from pathlib import Path
 
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
-from docsense.data_base.models import Document
+from docsense.data_base.models import Document, DocumentStatus
 from docsense.repositories import documents_repository
-from docsense.schemas import DocumentAnalyseUpdate
+from docsense.schemas import DocumentAnalysisUpdate
 from docsense.services import storage_service
 
 def upload_document(db: Session,file: UploadFile) -> Document:  
@@ -40,14 +40,14 @@ def delete_document(db: Session, document_id:int) -> None:
   documents_repository.delete_document(db,document)
   db.commit()
   
-def anylysis_document(db: Session,
+def update_document_analysis(db: Session,
                       document_id: int,
-                      data: DocumentAnalyseUpdate,
+                      data: DocumentAnalysisUpdate,
                       ) -> Document:
   document = documents_repository.get_document(db,document_id)
   if document is None:
     raise HTTPException(status_code=404, detail='Document not found')
-  if data.status == 'PROCESSED' and data.topic is None:
+  if data.status == DocumentStatus.PROCESSED and data.topic is None:
     raise HTTPException(status_code=400,detail='Topic is required when status is processed')
   updated_document = documents_repository.update_document_analysis(document,data.status,data.topic)
   db.commit()

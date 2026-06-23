@@ -16,6 +16,6 @@ class DocumentResponse(BaseModel):
   topic: str|None = None
   created_at: datetime
   
-class DocumentAnalyseUpdate(BaseModel):
+class DocumentAnalysisUpdate(BaseModel):
   status: DocumentStatus
   topic: str|None = None

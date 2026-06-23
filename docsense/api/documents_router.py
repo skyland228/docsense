@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse, FileResponse
 from sqlalchemy.orm import Session
 from docsense.dependencies import get_db
 from docsense.services import documents_service
-from docsense.schemas import DocumentResponse, DocumentUploadResponse,DocumentAnalyseUpdate
+from docsense.schemas import DocumentResponse, DocumentUploadResponse,DocumentAnalysisUpdate
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -29,7 +29,7 @@ def get_documents(db: Session = Depends(get_db)):
 @router.patch('/{document_id}/analysis', response_model=DocumentResponse)
 def update_document_analysis(
     document_id: int,
-    data: DocumentAnalyseUpdate,
+    data:DocumentAnalysisUpdate,
     db: Session = Depends(get_db)
 ):
-    return documents_service.anylysis_document(db,document_id,data)
+    return documents_service.update_document_analysis(db,document_id,data)
