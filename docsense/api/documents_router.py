@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi.responses import FileResponse, FileResponse
 from sqlalchemy.orm import Session
+from docsense.data_base.models import DocumentStatus
 from docsense.dependencies import get_db
 from docsense.services import documents_service
 from docsense.schemas import DocumentResponse, DocumentUploadResponse,DocumentAnalysisUpdate
@@ -20,13 +21,15 @@ def download_document( document_id: int,db: Session = Depends(get_db)):
     )
     
 @router.get("",response_model=list[DocumentResponse])
-def get_documents(db: Session = Depends(get_db)):
-    return documents_service.get_documents(db)
+def get_documents(status: DocumentStatus | None = None,
+    db: Session = Depends(get_db)):
+    return documents_service.get_documents(db,status)
 
 @router.get("/{document_id}")
 def get_document(document_id: int, db:Session = Depends(get_db)):
     return documents_service.get_document(db,document_id)
-@router.delete('/{document_id}/delete')
+
+@router.delete('/{document_id}')
 def delete_document(document_id: int,db: Session = Depends(get_db)):
     return documents_service.delete_document(db,document_id)
 

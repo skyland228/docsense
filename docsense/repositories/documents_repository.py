@@ -13,8 +13,11 @@ def create_document(db:Session,original_filename:str,
 def get_document(db:Session,document_id:int) -> Document | None:
   return db.query(Document).filter(Document.id == document_id).first()
 
-def get_documents(db: Session) -> list[Document]:
+def get_documents(db: Session, status: DocumentStatus | None = None) -> list[Document]:
+  if status:
+    return db.query(Document).filter(Document.status == status).all()
   return db.query(Document).all()
+  
 
 def delete_document(db: Session, document: Document) -> None:
   db.delete(document)
