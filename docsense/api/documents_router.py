@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, UploadFile, File
-from fastapi.responses import FileResponse, FileResponse
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from docsense.data_base.models import DocumentStatus
 from docsense.dependencies import get_db
@@ -19,6 +19,16 @@ def download_document( document_id: int,db: Session = Depends(get_db)):
         path=document.file_path,
         filename=document.original_filename,   
     )
+    
+@router.get("/download")
+def get_documents_files(db: Session = Depends(get_db)):
+    zip_path = documents_service.get_documents_files(db)
+    return FileResponse(
+        path = zip_path,
+        filename='documents.zip',
+        media_type='application/zip'
+    )
+
     
 @router.get("",response_model=list[DocumentResponse])
 def get_documents(status: DocumentStatus | None = None,

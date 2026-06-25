@@ -7,7 +7,7 @@ __pycache__/
 *.so
 *.pyd
 *.dll
-
+temp/
 # Virtual environments
 .venv/
 venv/
