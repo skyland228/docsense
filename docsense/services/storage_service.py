@@ -4,7 +4,7 @@ from fastapi import UploadFile
 
 def save_upload_file(file: UploadFile) -> dict:
   upload_dir = Path("uploads")
-  upload_dir.mkdir(parents=True, exist_ok=True) # создание папки, если ее нет
+  upload_dir.mkdir(parents=True, exist_ok=True) 
   safe_filename = Path(file.filename).name
   original_path = upload_dir / safe_filename
   name = original_path.stem
@@ -23,6 +23,15 @@ def save_upload_file(file: UploadFile) -> dict:
     "path": str(file_path),
         }
   
+def save_upload_files(files: list[UploadFile]) ->  list[dict]:
+  upload_dir = Path("uploads")
+  upload_dir.mkdir(parents = True, exist_ok = True)
+  file_dicts = []
+  for file in files:
+    saved_file = save_upload_file(file)
+    file_dicts.append(saved_file)
+  return file_dicts
+
 def get_file_path(stored_filename: str) -> Path:
   safe_filename = Path(stored_filename).name
   file_path = Path("uploads") / safe_filename

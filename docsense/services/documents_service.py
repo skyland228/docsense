@@ -18,6 +18,20 @@ def upload_document(db: Session,file: UploadFile) -> Document:
   db.refresh(document)
   return document
 
+def upload_documents(db: Session,files: list[UploadFile]) -> list[Document]:
+  saved_files = storage_service.save_upload_files(files)
+  documents = []
+  for saved_file in saved_files:
+    document = documents_repository.create_document(db,
+                                                    saved_file['original_filename'],
+                                                    stored_filename=saved_file['stored_filename'],
+                                                    file_path=saved_file['path'])
+    documents.append(document)
+  db.commit()
+  for document in documents:
+    db.refresh(document)
+  return documents
+  
 def get_document_file(db:Session,id:int) -> Document:
   document = documents_repository.get_document(db,id)
   if document is None:
