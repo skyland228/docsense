@@ -23,3 +23,6 @@ class DocumentAnalysisUpdate(BaseModel):
 class DocumentTopicUpdate(BaseModel):
   document_ids: list[int]
   topic : str
+  
+class DocumentDelete(BaseModel):
+  ids: list[int]
