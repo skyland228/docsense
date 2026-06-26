@@ -3,7 +3,7 @@ from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from docsense.data_base.models import Document, DocumentStatus
 from docsense.repositories import documents_repository
-from docsense.schemas import DocumentAnalysisUpdate
+from docsense.schemas import DocumentAnalysisUpdate, DocumentTopicUpdate
 from docsense.services import storage_service
 import zipfile
 
@@ -102,3 +102,20 @@ def update_document_analysis(db: Session,
   db.refresh(updated_document)
   return updated_document
   
+def fill_documents_topics(db: Session,
+                              data:list[DocumentTopicUpdate]) -> list[Document]:
+  updated_documents = []
+  for i in range(len(data)):
+    documents = documents_repository.get_document_by_ids(
+        db,
+        data[i].document_ids,
+    )
+    if not documents:
+      raise HTTPException(status_code=404,detail = 'Documents not found')
+    for document in documents:
+      updated_document = documents_repository.fill_document_topic(document,data[i].topic)
+      updated_documents.append(updated_document)
+  db.commit()
+  for document in updated_documents:
+    db.refresh(document)
+  return updated_documents  

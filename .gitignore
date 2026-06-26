@@ -129,6 +129,7 @@ Desktop.ini
 $RECYCLE.BIN/
 
 # Temporary and backup files
+NEXT_STEPS.txt
 *.tmp
 *.temp
 *.bak

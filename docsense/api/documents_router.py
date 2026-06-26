@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from docsense.data_base.models import DocumentStatus
 from docsense.dependencies import get_db
 from docsense.services import documents_service
-from docsense.schemas import DocumentResponse, DocumentUploadResponse, DocumentAnalysisUpdate
+from docsense.schemas import DocumentResponse, DocumentTopicUpdate, DocumentUploadResponse, DocumentAnalysisUpdate
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -56,6 +56,10 @@ def get_document(document_id: int, db: Session = Depends(get_db)):
 
 
 # Update
+@router.patch("/analysis", response_model = list[DocumentResponse])
+def fill_documents_topics(data: list[DocumentTopicUpdate],
+                              db: Session = Depends(get_db)):
+    return documents_service.fill_documents_topics(db,data)
 
 @router.patch("/{document_id}/analysis", response_model=DocumentResponse)
 def update_document_analysis(

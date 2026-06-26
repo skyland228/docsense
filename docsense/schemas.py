@@ -19,3 +19,7 @@ class DocumentResponse(BaseModel):
 class DocumentAnalysisUpdate(BaseModel):
   status: DocumentStatus
   topic: str|None = None
+  
+class DocumentTopicUpdate(BaseModel):
+  document_ids: list[int]
+  topic : str
