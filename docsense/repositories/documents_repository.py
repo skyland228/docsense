@@ -16,6 +16,9 @@ def get_document(db:Session,document_id:int) -> Document | None:
 def get_document_by_ids(db: Session, ids: list[int]) -> list[Document]:
   return db.query(Document).filter(Document.id.in_(ids)).all()
 
+def get_all_documents(db: Session) -> list[Document]:
+    return db.query(Document).all()
+  
 def get_documents(db: Session, status: DocumentStatus | None = None) -> list[Document]:
   if status:
     return db.query(Document).filter(Document.status == status).all()

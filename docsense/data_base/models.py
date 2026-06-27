@@ -7,7 +7,6 @@ from enum import Enum
 
 class DocumentStatus(str,Enum):
   UPLOADED = 'uploaded'
-  PROCESSING = 'processing'
   PROCESSED = 'processed'
   FAILED = 'failed'
   
@@ -18,10 +17,6 @@ class Document(Base):
   original_filename: Mapped[str] = mapped_column(String(255))
   stored_filename: Mapped[str] = mapped_column(String(255),unique=True)
   file_path: Mapped[str] = mapped_column(String(500), unique=True)
-  content_type: Mapped[str | None] = mapped_column(
-    String(100),
-    nullable = True,
-  )
   status: Mapped[DocumentStatus] = mapped_column(
     SqlEnum(DocumentStatus),
     default=DocumentStatus.UPLOADED,
