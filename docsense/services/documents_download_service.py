@@ -19,12 +19,12 @@ def get_documents_files(db: Session) -> Path:
   documents = documents_repository.get_documents_without_topic(db)
   if documents is None:
     raise HTTPException(status_code = 404, detail = 'Documents not found')
-  existing_file_paths = []
+  existing_documents = []
   for document in documents:
     file_path = Path(document.file_path)
     if file_path.exists():
-      existing_file_paths.append(file_path)
-  if not existing_file_paths:
+      existing_documents.append(document)
+  if not existing_documents:
     raise HTTPException(
       status_code = 404,
       detail ='No document files found'
@@ -34,10 +34,11 @@ def get_documents_files(db: Session) -> Path:
   zip_path = zip_dir/"documents.zip"
   
   with zipfile.ZipFile(zip_path,'w') as zip_file:
-    for file_path in existing_file_paths:
+    for document in existing_documents:
+      file_path = Path(document.file_path)
       zip_file.write(
         file_path,
-        arcname = file_path.name,
+        arcname = f"{document.id}__{document.stored_filename}",
       )
   return zip_path
   

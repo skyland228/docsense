@@ -88,8 +88,8 @@ ipython_config.py
 *.sqlite3-wal
 
 # Runtime files produced by DocSense
+/ml_mock_temp/
 /uploads/
-/ml_mock_service.py
 *.log
 *.pid
 
