@@ -20,9 +20,10 @@ class DocumentAnalysisUpdate(BaseModel):
   status: DocumentStatus
   topic: str|None = None
   
-class DocumentTopicUpdate(BaseModel):
+class DocumentTopicUpdateBulk(BaseModel):
   document_ids: list[int]
-  topic : str
+  topic : str | None = None
+  status: DocumentStatus
   
 class DocumentDelete(BaseModel):
   ids: list[int]

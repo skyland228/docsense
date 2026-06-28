@@ -41,16 +41,18 @@ def analyze_documents() -> list[dict]:
             continue
         text = file_path.read_text(encoding='utf-8')
         words = text.split()
-        
         if words:
             topic = words[0]
+            status = 'processed'
         else:
-            topic = 'empty'
+            topic = None
+            status = 'failed'
         document_id = int(file_path.name.split("__")[0])
 
         result.append({
             "document_ids": [document_id],
             "topic": topic,
+            "status": status,
         })
     return result
 

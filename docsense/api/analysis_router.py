@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from docsense.dependencies import get_db
-from docsense.schemas import DocumentAnalysisUpdate, DocumentResponse, DocumentTopicUpdate
+from docsense.schemas import DocumentAnalysisUpdate, DocumentResponse, DocumentTopicUpdateBulk
 from docsense.services import documents_analysis_service
 
 router = APIRouter(tags=["documents analysis"])
 
 @router.patch("/analysis", response_model = list[DocumentResponse])
-def fill_documents_topics(data: list[DocumentTopicUpdate],
+def fill_documents_topics(data: list[DocumentTopicUpdateBulk],
                               db: Session = Depends(get_db)):
     return documents_analysis_service.fill_documents_topics(db,data)
 

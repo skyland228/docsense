@@ -30,9 +30,9 @@ def get_documents_without_topic(db: Session) -> list[Document]:
 def delete_document(db: Session, document: Document) -> None:
   db.delete(document)
   
-def fill_document_topic(document: Document,topic: str) -> Document:
+def fill_document_topic(document: Document,topic: str, status: DocumentStatus) -> Document:
   document.topic = topic
-  document.status = DocumentStatus.PROCESSED
+  document.status = status
   return document
 
 def update_document_analysis(
