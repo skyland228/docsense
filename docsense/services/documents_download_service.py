@@ -16,7 +16,7 @@ def get_document_file(db:Session,id:int) -> Document:
   return document
 
 def get_documents_files(db: Session) -> Path:
-  documents = documents_repository.get_documents_without_topic(db)
+  documents = documents_repository.get_documents_for_analysis(db)
   if documents is None:
     raise HTTPException(status_code = 404, detail = 'Documents not found')
   existing_documents = []

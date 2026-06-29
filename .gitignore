@@ -89,11 +89,14 @@ ipython_config.py
 
 # Runtime files produced by DocSense
 /ml_mock_temp/
+/ml_temp/
 /uploads/
 *.log
 *.pid
 
-# ML models, checkpoints, and experiment output
+# ML local inputs, models, checkpoints, and experiment output
+themes.txt
+ml_service.py
 *.pt
 *.pth
 *.onnx

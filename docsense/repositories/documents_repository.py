@@ -24,8 +24,8 @@ def get_documents(db: Session, status: DocumentStatus | None = None) -> list[Doc
     return db.query(Document).filter(Document.status == status).all()
   return db.query(Document).all()
   
-def get_documents_without_topic(db: Session) -> list[Document]:
-  return db.query(Document).filter(Document.topic.is_(None)).all()
+def get_documents_for_analysis(db: Session) -> list[Document]:
+  return db.query(Document).filter(Document.status != DocumentStatus.PROCESSED).all()
 
 def delete_document(db: Session, document: Document) -> None:
   db.delete(document)
