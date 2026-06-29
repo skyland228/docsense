@@ -30,6 +30,14 @@ def get_documents_for_analysis(db: Session) -> list[Document]:
 def delete_document(db: Session, document: Document) -> None:
   db.delete(document)
   
+def get_processed_document_with_topic(db : Session) -> list[Document]:
+  return (
+    db.query(Document)
+    .filter(Document.status == DocumentStatus.PROCESSED)
+    .filter(Document.topic.isnot(None))
+    .all()
+  )
+
 def fill_document_topic(document: Document,topic: str, status: DocumentStatus) -> Document:
   document.topic = topic
   document.status = status

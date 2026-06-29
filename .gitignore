@@ -91,6 +91,7 @@ ipython_config.py
 /ml_mock_temp/
 /ml_temp/
 /uploads/
+/sorted/
 *.log
 *.pid
 
