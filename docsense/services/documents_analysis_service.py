@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from docsense.data_base.models import Document, DocumentStatus
 from docsense.repositories import documents_repository
 from docsense.schemas import DocumentAnalysisUpdate, DocumentTopicUpdateBulk
+from docsense.services import document_sort_service
 
 def update_document_analysis(db: Session,
                       document_id: int,
@@ -16,6 +17,8 @@ def update_document_analysis(db: Session,
   if data.status == DocumentStatus.PROCESSED and data.topic is None:
     raise HTTPException(status_code=400,detail='Topic is required when status is processed')
   updated_document = documents_repository.update_document_analysis(document,data.status,data.topic)
+  if updated_document.status == DocumentStatus.PROCESSED:
+    document_sort_service.sort_document(updated_document)
   db.commit()
   db.refresh(updated_document)
   return updated_document
@@ -38,6 +41,8 @@ def fill_documents_topics(db: Session,
         ) 
       updated_document = documents_repository.fill_document_topic(document,data[i].topic,data[i].status)
       updated_documents.append(updated_document)
+      if updated_document.status == DocumentStatus.PROCESSED:
+        document_sort_service.sort_document(updated_document)
 
   db.commit()
   for document in updated_documents:
