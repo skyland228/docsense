@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from docsense.data_base.models import Document
 from docsense.repositories import documents_repository
+from docsense.services import maintenance_service
 
 
 def get_document_file(db:Session,id:int) -> Document:
@@ -15,9 +16,12 @@ def get_document_file(db:Session,id:int) -> Document:
     raise HTTPException(status_code=404,detail='Document file not found')
   return document
 
-def get_documents_files(db: Session) -> Path:
-  documents = documents_repository.get_documents_for_analysis(db)
-  if documents is None:
+def get_documents_files(db: Session,analysis:bool) -> Path:
+  documents = documents_repository.get_documents_for_download(db,analysis)
+  if analysis:
+    maintenance_service.cleanup_documents_for_analysis(db,documents)
+    documents = documents_repository.get_documents_for_download(db,analysis)
+  if not documents:
     raise HTTPException(status_code = 404, detail = 'Documents not found')
   existing_documents = []
   for document in documents:

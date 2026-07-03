@@ -1,11 +1,7 @@
-
-
 from pathlib import Path
-
 from sqlalchemy.orm import Session
-
+from docsense.data_base.models import Document
 from docsense.repositories import documents_repository
-
 
 def get_documents_orphans(db: Session) -> dict:
   documents = documents_repository.get_all_documents(db) 
@@ -60,3 +56,12 @@ def cleanup_documents_orphans(db: Session) -> dict:
     'deleted_db_records': deleted_db_records,
     'delete_files': deleted_files,
   }
+  
+def cleanup_documents_for_analysis(db: Session,documents:list[Document]) -> None:
+  for document in documents:
+    file_path = Path(document.file_path)
+    if not(file_path.exists()):
+      documents_repository.delete_document(db,document)
+  db.commit()
+
+  return

@@ -7,14 +7,14 @@ from docsense.services import documents_download_service
 router = APIRouter(tags=["documents download"])
 
 @router.get("/download")
-def get_documents_files(db: Session = Depends(get_db)):
-    zip_path = documents_download_service.get_documents_files(db)
+def get_documents_files(analysis:bool = False,db: Session = Depends(get_db)):
+    zip_path = documents_download_service.get_documents_files(db,analysis)
     return FileResponse(
         path=zip_path,
         filename="documents.zip",
         media_type="application/zip",
     )
-
+    
 @router.get("/{document_id}/download")
 def download_document(document_id: int, db: Session = Depends(get_db)):
     document = documents_download_service.get_document_file(db, document_id)
