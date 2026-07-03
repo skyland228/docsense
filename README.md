@@ -1,14 +1,23 @@
 # DocSense
 
-DocSense is a local backend for uploading, storing, downloading, analyzing, and organizing text documents.
+DocSense is a local backend for uploading, storing, analyzing, and organizing text documents.
 
-The project is built around a simple idea: a user uploads documents, the backend stores files and metadata, and an external ML component can download documents that still need analysis, detect their topic, and send the result back to the backend.
+The project is built around a simple workflow: a user uploads documents, the backend stores files and metadata, an external ML component downloads documents that need analysis, detects their topic, and sends the result back to the backend.
 
-This repository contains the backend part of the project. The ML implementation can be developed separately and connected through the documented API contract.
+This repository contains the backend part of the project. The ML implementation is intentionally kept outside this repository and can be connected through the API contract described below.
 
 ## Current State
 
-The preparation stage is mostly complete. The backend can already work with documents as files and as database records.
+DocSense currently implements the core document-processing pipeline.
+
+After upload, each document is saved to the local `uploads/` directory and gets a database record with:
+
+```text
+status = uploaded
+topic = null
+```
+
+An external ML service can download documents for analysis, detect their topics, and send a PATCH request back to the backend. The backend then updates the document status and topic. If the document is successfully processed, the file is automatically moved into a folder named by its topic.
 
 Implemented:
 
@@ -21,27 +30,30 @@ Implemented:
 - filtering documents by status;
 - getting one document by id;
 - downloading one document by id;
-- downloading a ZIP archive of documents for analysis;
+- downloading a ZIP archive of documents;
+- cleanup-aware ZIP download for ML analysis;
 - single document deletion;
 - bulk document deletion;
 - updating analysis result for one document;
 - bulk update of document analysis results;
 - `uploaded`, `processed`, and `failed` document statuses;
-- maintenance endpoint for checking and cleaning inconsistent file/database state;
+- automatic sorting after successful analysis;
+- manual sorting endpoint for already processed documents;
+- maintenance endpoints for checking and cleaning inconsistent file/database state;
 - Swagger UI documentation through FastAPI.
 
 ## Document Flow
-
-Basic flow:
 
 ```text
 upload document(s)
 -> backend saves files to uploads/
 -> backend creates Document records in SQLite
--> external ML service downloads documents for analysis
+-> ML service downloads documents for analysis
+-> backend can cleanup missing analysis files before sending ZIP
 -> ML service detects topic or marks document as failed
 -> ML service sends analysis result back to backend
 -> backend updates status and topic
+-> backend moves processed files into topic folders
 ```
 
 Current document statuses:
@@ -61,10 +73,12 @@ The backend exposes two main endpoints for ML integration.
 ### Download Documents For Analysis
 
 ```http
-GET /api/v1/documents/download
+GET /api/v1/documents/download?analysis=true
 ```
 
 Returns a ZIP archive with documents that should be analyzed.
+
+When `analysis=true`, the backend prepares documents for ML analysis and cleans records whose files are missing before building the ZIP archive.
 
 Files inside the archive are named with the document id prefix:
 
@@ -104,8 +118,6 @@ Rules:
 - `processed` requires a topic;
 - `failed` means the document could not be analyzed;
 - `failed` may have `topic: null`.
-
-The actual ML code is not required to be part of this repository. The backend only needs the API contract above.
 
 ## Technologies
 
@@ -197,13 +209,19 @@ GET /api/v1/documents/{document_id}/download
 
 Returns the stored file.
 
-### Download Documents For Analysis
+### Download Documents As ZIP
 
 ```http
 GET /api/v1/documents/download
 ```
 
-Returns a ZIP archive for the external ML service.
+Returns a ZIP archive of documents.
+
+For ML analysis with cleanup:
+
+```http
+GET /api/v1/documents/download?analysis=true
+```
 
 ### Update One Analysis Result
 
@@ -238,13 +256,21 @@ Example:
 ]
 ```
 
+### Sort Processed Documents Manually
+
+```http
+POST /api/v1/documents/sort
+```
+
+Moves already processed documents into folders named by topic.
+
 ### Delete One Document
 
 ```http
 DELETE /api/v1/documents/{document_id}
 ```
 
-Deletes the file from `uploads/` and removes the database record.
+Deletes the file from `uploads/` or `sorted/` and removes the database record.
 
 ### Delete Multiple Documents
 
@@ -260,6 +286,22 @@ Example:
 }
 ```
 
+### Get Orphan/Missing Documents
+
+```http
+GET /api/v1/maintenance/orphans
+```
+
+Returns records whose files are missing and files that do not have database records.
+
+### Cleanup Orphan/Missing Documents
+
+```http
+POST /api/v1/maintenance/clean_up
+```
+
+Removes inconsistent database records and orphan files.
+
 ## Project Structure
 
 ```text
@@ -273,17 +315,12 @@ docsense/
 `-- main.py         # application creation and startup
 ```
 
-## Current Plan
+## Future Development
 
-The next step is document organization after analysis.
+Next steps:
 
-Planned near-term feature:
-
-```text
-if a document has a topic
--> create a folder for this topic if it does not exist
--> move/copy the document into that topic folder
-```
+- add a simple frontend to make the document workflow visible and easier to test manually;
+- add tests for the main document flow: upload, ML download, analysis update, sorting, and cleanup.
 
 Possible future development:
 
