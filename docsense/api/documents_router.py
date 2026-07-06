@@ -5,7 +5,8 @@ from docsense.api import (
     download_router,
     read_router,
     sort_router,
-    upload_router,)
+    upload_router,
+    summary_router)
 
 router = APIRouter()
 
@@ -15,3 +16,4 @@ router.include_router(read_router.router, prefix="/documents")
 router.include_router(analysis_router.router, prefix="/documents")
 router.include_router(delete_router.router, prefix="/documents")
 router.include_router(sort_router.router, prefix='/documents')
+router.include_router(summary_router.router, prefix = '/documents')
