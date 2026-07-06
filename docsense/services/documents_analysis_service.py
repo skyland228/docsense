@@ -1,3 +1,7 @@
+from pathlib import Path
+import subprocess
+import sys
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from docsense.data_base.models import Document, DocumentStatus
@@ -48,3 +52,11 @@ def fill_documents_topics(db: Session,
   for document in updated_documents:
     db.refresh(document)
   return updated_documents  
+
+def trigger_analysis() -> None:
+  ml_service_path = Path('ml_service.py')
+  if not ml_service_path.is_file():
+    return
+  subprocess.Popen(
+    [sys.executable, str(ml_service_path)]
+  )

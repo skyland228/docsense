@@ -2,7 +2,7 @@ from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from docsense.data_base.models import Document
 from docsense.repositories import documents_repository
-from docsense.services import file_storage_service
+from docsense.services import documents_analysis_service, documents_download_service, file_storage_service
 
 def upload_document(db: Session,file: UploadFile) -> Document:  
   saved_file =  file_storage_service.save_upload_file(file)
@@ -28,4 +28,5 @@ def upload_documents(db: Session,files: list[UploadFile]) -> list[Document]:
   db.commit()
   for document in documents:
     db.refresh(document)
+  documents_analysis_service.trigger_analysis()
   return documents
