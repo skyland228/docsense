@@ -1,9 +1,12 @@
 from datetime import datetime
-from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column
-from docsense.data_base.database import Base
-from sqlalchemy import Enum as SqlEnum
 from enum import Enum
+
+from sqlalchemy import DateTime, String, func
+from sqlalchemy import Enum as SqlEnum
+from sqlalchemy.orm import Mapped, mapped_column
+
+from docsense.data_base.database import Base
+
 
 class DocumentStatus(str,Enum):
   UPLOADED = 'uploaded'

@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from docsense.dependencies import get_db
-from docsense.schemas import DocumentAnalysisUpdate, DocumentResponse, DocumentTopicUpdateBulk
+from docsense.schemas import (
+    DocumentAnalysisUpdate,
+    DocumentResponse,
+    DocumentTopicUpdateBulk,
+)
 from docsense.services import documents_analysis_service
 
 router = APIRouter(tags=["documents analysis"])

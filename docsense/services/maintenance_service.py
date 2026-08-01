@@ -1,7 +1,10 @@
 from pathlib import Path
+
 from sqlalchemy.orm import Session
+
 from docsense.data_base.models import Document
 from docsense.repositories import documents_repository
+
 
 def get_documents_orphans(db: Session) -> dict:
   documents = documents_repository.get_all_documents(db) 
@@ -64,4 +67,3 @@ def cleanup_documents_for_analysis(db: Session,documents:list[Document]) -> None
       documents_repository.delete_document(db,document)
   db.commit()
 
-  return

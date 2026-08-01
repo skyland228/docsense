@@ -1,13 +1,15 @@
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
 from docsense.data_base.models import Document, DocumentStatus
 from docsense.repositories import documents_repository
 from docsense.schemas import DocumentAnalysisUpdate, DocumentTopicUpdateBulk
 from docsense.services import documents_sort_service
+
 
 def update_document_analysis(db: Session,
                       document_id: int,

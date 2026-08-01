@@ -1,7 +1,10 @@
 from pathlib import Path
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
 from docsense.repositories import documents_repository
+
 
 def delete_document(db: Session, document_id:int) -> None:
   document = documents_repository.get_document(db,document_id)
@@ -16,7 +19,7 @@ def delete_document(db: Session, document_id:int) -> None:
 def delete_documents(db: Session, documents_ids: list[int]) -> None:
   documents = documents_repository.get_document_by_ids(db,documents_ids)
   if not documents:
-    return None
+    return
   for document in documents:
     file_path = Path(document.file_path)
     if file_path.exists():

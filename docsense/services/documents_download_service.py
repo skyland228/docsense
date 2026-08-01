@@ -1,7 +1,9 @@
-from pathlib import Path
 import zipfile
+from pathlib import Path
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
 from docsense.data_base.models import Document
 from docsense.repositories import documents_repository
 from docsense.services import maintenance_service

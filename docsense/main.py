@@ -1,9 +1,10 @@
-from fastapi import FastAPI
 import uvicorn
-from docsense.api.maintenance_router import router as maintenance_router
+from fastapi import FastAPI
+
 from docsense.api.documents_router import router as documents_router
-from docsense.data_base.database import Base,engine
-from docsense.data_base import models
+from docsense.api.maintenance_router import router as maintenance_router
+from docsense.data_base.database import Base, engine
+
 app = FastAPI()
 app.include_router(documents_router, prefix="/api/v1")
 app.include_router(maintenance_router, prefix="/api/v1")

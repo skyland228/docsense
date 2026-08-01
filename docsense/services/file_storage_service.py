@@ -1,6 +1,8 @@
-from pathlib import Path
 import shutil
+from pathlib import Path
+
 from fastapi import UploadFile
+
 
 def save_upload_file(file: UploadFile) -> dict:
   upload_dir = Path("uploads")

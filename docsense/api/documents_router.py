@@ -1,12 +1,14 @@
 from fastapi import APIRouter
+
 from docsense.api import (
     analysis_router,
     delete_router,
     download_router,
     read_router,
     sort_router,
+    summary_router,
     upload_router,
-    summary_router)
+)
 
 router = APIRouter()
 

@@ -1,6 +1,9 @@
-from pydantic import BaseModel
-from docsense.data_base.models import DocumentStatus, SummaryStatus
 from datetime import datetime
+
+from pydantic import BaseModel
+
+from docsense.data_base.models import DocumentStatus, SummaryStatus
+
 
 class DocumentUploadResponse(BaseModel):
   id: int

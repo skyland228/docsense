@@ -1,6 +1,8 @@
-from pathlib import Path
 import shutil
+from pathlib import Path
+
 from sqlalchemy.orm import Session
+
 from docsense.data_base.models import Document
 from docsense.repositories import documents_repository
 
