@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from docsense.data_base.models import Document, DocumentStatus, SummaryStatus
+from docsense.data_base.models import Document, DocumentStatus
 
 
 def create_document(db:Session,original_filename:str,
@@ -56,7 +56,3 @@ def update_document_analysis(
   document.topic = topic
   return document
 
-def patch_summary(document: Document,summary_title: str, status: SummaryStatus) -> Document:
-  document.summary_title = summary_title
-  document.summary_status = status
-  return document

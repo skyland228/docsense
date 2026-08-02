@@ -18,6 +18,7 @@ def upload_document(db: Session,file: UploadFile) -> Document:
                                                   )
   db.commit()
   db.refresh(document)
+  documents_analysis_service.trigger_analysis()
   return document
 
 

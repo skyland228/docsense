@@ -113,6 +113,9 @@ ml_service.py
 *.code-workspace
 *.vsix
 
+# Local project tooling configuration
+pyproject.toml
+
 # Other editors and IDEs
 .idea/
 .spyderproject

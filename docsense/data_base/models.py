@@ -13,11 +13,6 @@ class DocumentStatus(str,Enum):
   PROCESSED = 'processed'
   FAILED = 'failed'
   
-class SummaryStatus(str,Enum):
-  NOT_CREATED = 'not_created'
-  CREATED = 'created'
-  FAILED = 'failed'
-  
 class Document(Base):
   __tablename__ = "documents"
   
@@ -37,7 +32,3 @@ class Document(Base):
     DateTime,
     server_default=func.now(),
   )
-  summary_title: Mapped[str | None] = mapped_column(nullable=True)
-  summary_status: Mapped[SummaryStatus] = mapped_column(SqlEnum(SummaryStatus),
-                                                        default = SummaryStatus.NOT_CREATED)
-  
