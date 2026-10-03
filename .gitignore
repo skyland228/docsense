@@ -1,0 +1,137 @@
+# =========================
+# Python
+# =========================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Compiled extensions
+*.so
+*.pyd
+
+
+# =========================
+# Virtual environments
+# =========================
+
+.venv/
+venv/
+env/
+ENV/
+
+
+# =========================
+# Environment / secrets
+# =========================
+
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.crt
+
+
+# =========================
+# Python tools / caches
+# =========================
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+.cache/
+
+
+# =========================
+# Build / packaging
+# =========================
+
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+
+pip-wheel-metadata/
+
+
+# =========================
+# Logs
+# =========================
+
+*.log
+logs/
+
+
+# =========================
+# Local databases
+# =========================
+
+*.db
+*.sqlite
+*.sqlite3
+
+
+# =========================
+# Uploaded / generated files
+# =========================
+
+uploads/
+storage/
+tmp/
+temp/
+
+
+# =========================
+# IDEs / editors
+# =========================
+
+.vscode/
+.idea/
+
+*.swp
+*.swo
+
+
+# =========================
+# Jupyter
+# =========================
+
+.ipynb_checkpoints/
+
+
+# =========================
+# OS files
+# =========================
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+
+# =========================
+# Test / temporary files
+# =========================
+
+.pytest_tmp/
+test-results/
+reports/
+
+
+# =========================
+# Misc
+# =========================
+
+*.tmp
+*.bak
+*.old
