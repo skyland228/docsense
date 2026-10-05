@@ -5,10 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import exception
 from app.services import user as user_service
 from app.db.models.user import User
-from app.dependencies import get_current_user, get_db
+from app.dependencies import get_db
 from app.schemas.user import TokenResponse, UserCreate, UserResponse
 
-router = APIRouter()
+router = APIRouter(tags=['user'])
 
 
 @router.post('/users', response_model=UserResponse)
@@ -36,7 +36,7 @@ async def user_login(
     db: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
     try:
-        token = await user_service.login(form_data, db)
+        token = await user_service.login(form_data.username, form_data.password, db)
     except exception.InvalidCredentialException:
         raise HTTPException(
             status_code=401,

@@ -19,4 +19,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
             status_code=401,
             detail='Invalid token',
         )
-    return await db.get(User, int(user_id))
+    user = await db.get(User, int(user_id))
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail='User not found',
+        )
+    return user

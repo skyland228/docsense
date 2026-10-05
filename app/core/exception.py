@@ -11,3 +11,11 @@ class UserWithThisEmailAlreadyExistsError(Exception):
 
 class UserWithThisUsernameAlreadyExistsError(Exception):
     pass
+
+
+class FileTooLargeError(Exception):
+    pass
+
+
+class FailedSaveDocument(Exception):
+    pass
