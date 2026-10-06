@@ -29,3 +29,9 @@ async def get_documents(user_id: int, db: AsyncSession) -> list[Document]:
     stmt = select(Document).where(Document.user_id == user_id)
     results = await db.execute(stmt)
     return results.scalars().all()
+
+
+async def get_document(document_id: int, user_id: int, db: AsyncSession) -> Document:
+    stmt = select(Document).where(Document.id == document_id, Document.user_id == user_id)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()

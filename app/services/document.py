@@ -27,7 +27,7 @@ async def upload_document(file: UploadFile, user_id: int, db: AsyncSession) -> D
     except Exception:
         await db.rollback()
         delete_file(upload_path)
-        raise exception.FailedSaveDocument
+        raise exception.FailedSaveDocumentError
     await db.refresh(document)
     return document
 
@@ -35,3 +35,10 @@ async def upload_document(file: UploadFile, user_id: int, db: AsyncSession) -> D
 async def get_documents(user_id: int, db: AsyncSession) -> list[Document]:
     documents = await document_repository.get_documents(user_id, db)
     return documents
+
+
+async def get_document(document_id: int, user_id: int, db: AsyncSession) -> Document:
+    document = await document_repository.get_document(document_id, user_id, db)
+    if document is None:
+        raise exception.DocumentDoesNotExistError
+    return document
