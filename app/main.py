@@ -1,9 +1,7 @@
-#
-
 from fastapi import FastAPI
 
-from app.routers.users import router as user_router
-from app.routers.documents import router as document_router
+from app.documents.router import router as document_router
+from app.users.router import router as user_router
 
 
 app = FastAPI()

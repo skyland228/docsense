@@ -1,14 +1,12 @@
-
-
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import exception
 from app.db.models.document import Document
 from app.db.models.user import User
 from app.dependencies import get_current_user, get_db
-from app.schemas.document import DocumentResponse
-from app.services import document as document_service
+from app.documents import exceptions as document_exceptions
+from app.documents import service
+from app.documents.schemas import DocumentResponse
 
 
 router = APIRouter(prefix='/documents', tags=['document'])
@@ -21,17 +19,17 @@ async def upload_document(
     db: AsyncSession = Depends(get_db),
 ) -> Document:
     try:
-        document = await document_service.upload_document(file, current_user.id, db)
-    except exception.FileTooLargeError:
+        document = await service.upload_document(file, current_user.id, db)
+    except document_exceptions.FileTooLargeError as exc:
         raise HTTPException(
             status_code=status.HTTP_413_PAYLOAD_TOO_LARGE,
             detail='File too large',
-        )
-    except exception.FailedSaveDocumentError:
+        ) from exc
+    except document_exceptions.FailedSaveDocumentError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Failed to save document',
-        )
+        ) from exc
     return document
 
 
@@ -40,7 +38,7 @@ async def get_documents(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> list[Document]:
-    return await document_service.get_documents(current_user.id, db)
+    return await service.get_documents(current_user.id, db)
 
 
 @router.get('/{document_id}', response_model=DocumentResponse)
@@ -50,10 +48,10 @@ async def get_document(
     db: AsyncSession = Depends(get_db),
 ) -> Document:
     try:
-        document = await document_service.get_document(document_id, current_user.id, db)
-    except exception.DocumentDoesNotExistError:
+        document = await service.get_document(document_id, current_user.id, db)
+    except document_exceptions.DocumentDoesNotExistError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Document does not exist',
-        )
+        ) from exc
     return document

@@ -1,13 +1,10 @@
-
-
-
 from pathlib import Path
 from uuid import uuid4
 
 import aiofiles
 from fastapi import UploadFile
 
-from app.core import exception
+from app.documents import exceptions as document_exceptions
 
 UPLOAD_DIR = Path('uploads')
 MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -29,7 +26,7 @@ async def storage(file: UploadFile):
                     break
                 size += len(chunk)
                 if size > MAX_FILE_SIZE:
-                    raise exception.FileTooLargeError
+                    raise document_exceptions.FileTooLargeError
                 await f.write(chunk)
     except Exception:
         if upload_path.exists():
@@ -41,7 +38,3 @@ async def storage(file: UploadFile):
 def delete_file(upload_path):
     if upload_path is not None and upload_path.exists():
         upload_path.unlink()
-
-
-
-    
