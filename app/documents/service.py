@@ -1,10 +1,12 @@
+from pathlib import Path
+
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.document import Document
 from app.documents import exceptions as document_exceptions
 from app.documents import repository
-from app.documents.storage import delete_file, storage
+from app.documents.storage import delete_file, storage, get_file_path
 
 
 async def upload_document(file: UploadFile, user_id: int, db: AsyncSession) -> Document:
@@ -41,3 +43,10 @@ async def get_document(document_id: int, user_id: int, db: AsyncSession) -> Docu
     if document is None:
         raise document_exceptions.DocumentDoesNotExistError
     return document
+
+
+async def get_file(document_id: int, user_id: int, db: AsyncSession) -> tuple[Path, str, str]:
+    document = await get_document(document_id, user_id, db)
+    file_path = get_file_path(document.stored_filename)
+    return file_path, document.original_filename, document.content_type
+

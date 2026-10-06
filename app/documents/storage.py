@@ -10,7 +10,7 @@ UPLOAD_DIR = Path('uploads')
 MAX_FILE_SIZE = 5 * 1024 * 1024
 
 
-async def storage(file: UploadFile):
+async def storage(file: UploadFile) -> tuple[str, str, int, Path]:
     original_filename = file.filename
     extension = Path(original_filename).suffix
     stored_filename = f'{uuid4()}{extension}'
@@ -35,6 +35,13 @@ async def storage(file: UploadFile):
     return original_filename, stored_filename, size, upload_path
 
 
-def delete_file(upload_path):
+def delete_file(upload_path) -> None:
     if upload_path is not None and upload_path.exists():
         upload_path.unlink()
+
+
+def get_file_path(stored_filename: str) -> Path:
+    file_path = UPLOAD_DIR / stored_filename
+    if file_path.exists():
+        return file_path
+    raise document_exceptions.StoredFileNotFoundError

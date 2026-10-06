@@ -9,3 +9,7 @@ class FailedSaveDocumentError(Exception):
 class DocumentDoesNotExistError(Exception):
     pass
 
+
+class StoredFileNotFoundError(Exception):
+    pass
+

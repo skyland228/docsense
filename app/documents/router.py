@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.document import Document
@@ -55,3 +56,28 @@ async def get_document(
             detail='Document does not exist',
         ) from exc
     return document
+
+
+@router.get('/{document_id}/file')
+async def download_document(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> FileResponse:
+    try:
+        file_path, original_filename, content_type = await service.get_file(document_id, current_user.id, db)
+    except document_exceptions.StoredFileNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='File not found',
+        )
+    except document_exceptions.DocumentDoesNotExistError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Document does not exist',
+        )
+    return FileResponse(
+        path=file_path,
+        filename=original_filename,
+        media_type=content_type,
+    )
