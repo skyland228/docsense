@@ -33,6 +33,6 @@ async def register(user_data: UserCreate, db: AsyncSession) -> User:
 async def login(username: str, password: str, db: AsyncSession) -> str:
     user = await user_repository.get_user_by_name(username, db)
     if user is None or not verify_password(password, user.password_hash):
-        raise exception.InvalidCredentialException
+        raise exception.InvalidCredentialExceptionError
     token = create_access_token(user.id)
     return token

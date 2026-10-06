@@ -1,7 +1,7 @@
 
 
 
-class InvalidCredentialException(Exception):
+class InvalidCredentialExceptionError(Exception):
     pass
 
 
@@ -17,5 +17,11 @@ class FileTooLargeError(Exception):
     pass
 
 
-class FailedSaveDocument(Exception):
+class FailedSaveDocumentError(Exception):
     pass
+
+
+class DocumentDoesNotExistError(Exception):
+    pass
+
+
