@@ -10,8 +10,8 @@ UPLOAD_DIR = Path('uploads')
 MAX_FILE_SIZE = 5 * 1024 * 1024
 
 
-async def storage(file: UploadFile) -> tuple[str, str, int, Path]:
-    original_filename = file.filename
+async def save_file(file: UploadFile) -> tuple[str, str, int, Path]:
+    original_filename = file.filename or 'document'
     extension = Path(original_filename).suffix
     stored_filename = f'{uuid4()}{extension}'
     UPLOAD_DIR.mkdir(exist_ok=True)
@@ -35,7 +35,7 @@ async def storage(file: UploadFile) -> tuple[str, str, int, Path]:
     return original_filename, stored_filename, size, upload_path
 
 
-def delete_file(upload_path) -> None:
+def delete_file(upload_path: Path | None) -> None:
     if upload_path is not None and upload_path.exists():
         upload_path.unlink()
 

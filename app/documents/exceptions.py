@@ -13,3 +13,8 @@ class DocumentDoesNotExistError(Exception):
 class StoredFileNotFoundError(Exception):
     pass
 
+
+class FailedToDeleteDocumentError(Exception):
+    pass
+
+

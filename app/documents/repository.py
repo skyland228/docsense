@@ -33,3 +33,7 @@ async def get_document(document_id: int, user_id: int, db: AsyncSession) -> Docu
     stmt = select(Document).where(Document.id == document_id, Document.user_id == user_id)
     result = await db.execute(stmt)
     return result.scalar_one_or_none()
+
+
+async def delete_document(document: Document, db: AsyncSession) -> None:
+    await db.delete(document)

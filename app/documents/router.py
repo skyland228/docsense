@@ -65,7 +65,11 @@ async def download_document(
     db: AsyncSession = Depends(get_db),
 ) -> FileResponse:
     try:
-        file_path, original_filename, content_type = await service.get_file(document_id, current_user.id, db)
+        file_path, original_filename, content_type = await service.get_file(
+            document_id,
+            current_user.id,
+            db
+        )
     except document_exceptions.StoredFileNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -81,3 +85,23 @@ async def download_document(
         filename=original_filename,
         media_type=content_type,
     )
+
+
+@router.delete('/{document_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_document(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    try:
+        await service.delete_document(document_id, current_user.id, db)
+    except document_exceptions.DocumentDoesNotExistError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Document does not exist',
+        )
+    except document_exceptions.FailedToDeleteDocumentError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Failed to delete document',
+        )

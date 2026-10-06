@@ -6,13 +6,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.document import Document
 from app.documents import exceptions as document_exceptions
 from app.documents import repository
-from app.documents.storage import delete_file, storage, get_file_path
+from app.documents import storage
 
 
 async def upload_document(file: UploadFile, user_id: int, db: AsyncSession) -> Document:
     upload_path = None
     try:
-        original_filename, stored_filename, size, upload_path = await storage(file)
+        original_filename, stored_filename, size, upload_path = await storage.save_file(file)
         document = repository.create_document(
             original_filename=original_filename,
             stored_filename=stored_filename,
@@ -27,7 +27,7 @@ async def upload_document(file: UploadFile, user_id: int, db: AsyncSession) -> D
         raise
     except Exception as exc:
         await db.rollback()
-        delete_file(upload_path)
+        storage.delete_file(upload_path)
         raise document_exceptions.FailedSaveDocumentError from exc
     await db.refresh(document)
     return document
@@ -45,8 +45,30 @@ async def get_document(document_id: int, user_id: int, db: AsyncSession) -> Docu
     return document
 
 
-async def get_file(document_id: int, user_id: int, db: AsyncSession) -> tuple[Path, str, str]:
+async def get_file(
+    document_id: int,
+    user_id: int,
+    db: AsyncSession
+) -> tuple[Path, str, str]:
     document = await get_document(document_id, user_id, db)
-    file_path = get_file_path(document.stored_filename)
+    file_path = storage.get_file_path(document.stored_filename)
     return file_path, document.original_filename, document.content_type
 
+
+async def delete_document(
+    document_id: int,
+    user_id: int,
+    db: AsyncSession,
+) -> None:
+    document = await get_document(document_id, user_id, db)
+    upload_path = storage.UPLOAD_DIR / document.stored_filename
+    try:
+        await repository.delete_document(document, db)
+        await db.commit()
+    except Exception as exc:
+        await db.rollback()
+        raise document_exceptions.FailedToDeleteDocumentError from exc
+    try:
+        storage.delete_file(upload_path)
+    except Exception:
+        pass
