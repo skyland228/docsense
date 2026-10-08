@@ -9,8 +9,6 @@ from app.documents import repository
 from app.documents import storage
 
 
-
-
 async def commit_or_fail(db: AsyncSession):
     try:
         await db.commit()
@@ -104,13 +102,26 @@ async def process_document(
     try:
         file_path = storage.get_file_path(document.stored_filename)
         text = await processing.extract_document_text(file_path, document.content_type)
-        repository.fill_text(document_id, text, db)
+        await repository.fill_text(document_id, text, db)
         document.status = DocumentStatus.ready
         document.error = None
         await commit_or_fail(db)
-    except document_exceptions.ProcessingError as e:
-        document.status = DocumentStatus.failed
-        document.error = str(e)
-        await commit_or_fail(db)
+    except Exception as e:
+        await db.rollback()
+        document = await repository.get_document_for_update(
+            document_id, user_id, db
+        )
+        if document is not None:
+            document.status = DocumentStatus.failed
+            document.error = str(e)
+            await commit_or_fail(db)
         raise
     return document
+
+
+async def get_document_text(document_id: int, user_id, db: AsyncSession) -> str:
+    document = await get_document(document_id, user_id, db)
+    document_text = await repository.get_document_text(document.id, db)
+    if document_text is None:
+        raise document_exceptions.DocumentTextNotReadyError
+    return document_text.text

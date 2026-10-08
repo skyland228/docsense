@@ -55,9 +55,20 @@ async def delete_document(document: Document, db: AsyncSession) -> None:
     await db.delete(document)
 
 
-def fill_text(document_id: int, text: str, db: AsyncSession) -> None:
-    document_text = DocumentText(
-        document_id=document_id,
-        text=text,
-    )
-    db.add(document_text)
+async def fill_text(document_id: int, text: str, db: AsyncSession) -> None:
+    document_text = await db.get(DocumentText, document_id)
+    if document_text is None:
+        document_text = DocumentText(
+            document_id=document_id,
+            text=text,
+        )
+        db.add(document_text)
+    else:
+        document_text.text = text
+        
+
+async def get_document_text(
+    document_id: int,
+    db: AsyncSession,
+) -> DocumentText | None:
+    return await db.get(DocumentText, document_id)

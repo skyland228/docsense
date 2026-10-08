@@ -41,3 +41,7 @@ class DocumentDecodeError(ProcessingError):
 
 class DocumentReadError(ProcessingError):
     pass
+
+
+class DocumentTextNotReadyError(Exception):
+    pass

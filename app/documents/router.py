@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.document import Document
@@ -117,38 +117,59 @@ async def process_document(
         document = await service.process_document(document_id, current_user.id, db)
     except document_exceptions.UnsupportedDocumentTypeError:
         raise HTTPException(
-            status_code=415,
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail='Unsupported document type',
         )
     except document_exceptions.DocumentAlreadyHandleError:
         raise HTTPException(
-            status_code=409,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Document is already being processed",
         )
     except document_exceptions.DocumentProcessingTimeoutError:
         raise HTTPException(
-            status_code=504,
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             detail='Document processing timeout',
         )
     except document_exceptions.DocumentDoesNotExistError:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail='Document does not exist',
         )
     except document_exceptions.DocumentDecodeError:
         raise HTTPException(
-            status_code=422,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail='Document content could not be decoded',
         )
     except document_exceptions.FailedChangeStatusError:
         raise HTTPException(
-            status_code=500,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Failed to process document',
         )
     except document_exceptions.DocumentReadError:
         raise HTTPException(
-            status_code=500,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Failed to read document',
         )
     
     return document
+
+
+@router.get('/{document_id}/text')
+async def get_document_text(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> PlainTextResponse:
+    try:
+        text = await service.get_document_text(document_id, current_user.id, db)
+    except document_exceptions.DocumentDoesNotExistError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Document does not exist',
+        )
+    except document_exceptions.DocumentTextNotReadyError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Document text is not ready",
+        )
+    return PlainTextResponse(content=text)
