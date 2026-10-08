@@ -105,3 +105,50 @@ async def delete_document(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Failed to delete document',
         )
+
+
+@router.post('/{document_id}/process', response_model=DocumentResponse)
+async def process_document(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Document:
+    try:
+        document = await service.process_document(document_id, current_user.id, db)
+    except document_exceptions.UnsupportedDocumentTypeError:
+        raise HTTPException(
+            status_code=415,
+            detail='Unsupported document type',
+        )
+    except document_exceptions.DocumentAlreadyHandleError:
+        raise HTTPException(
+            status_code=409,
+            detail="Document is already being processed",
+        )
+    except document_exceptions.DocumentProcessingTimeoutError:
+        raise HTTPException(
+            status_code=504,
+            detail='Document processing timeout',
+        )
+    except document_exceptions.DocumentDoesNotExistError:
+        raise HTTPException(
+            status_code=404,
+            detail='Document does not exist',
+        )
+    except document_exceptions.DocumentDecodeError:
+        raise HTTPException(
+            status_code=422,
+            detail='Document content could not be decoded',
+        )
+    except document_exceptions.FailedChangeStatusError:
+        raise HTTPException(
+            status_code=500,
+            detail='Failed to process document',
+        )
+    except document_exceptions.DocumentReadError:
+        raise HTTPException(
+            status_code=500,
+            detail='Failed to read document',
+        )
+    
+    return document

@@ -1,10 +1,18 @@
 
 from datetime import datetime
+from enum import Enum
 
-from sqlalchemy import DateTime, ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+
+
+class DocumentStatus(str, Enum):
+    uploaded = 'uploaded'
+    processing = 'processing'
+    ready = 'ready'
+    failed = 'failed'
 
 
 class Document(Base):
@@ -19,4 +27,26 @@ class Document(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
+    )
+    status: Mapped[DocumentStatus] = mapped_column(
+        SQLEnum(DocumentStatus),
+        default=DocumentStatus.uploaded,
+    )
+    error: Mapped[str | None]
+    text_data: Mapped['DocumentText | None'] = relationship(
+        back_populates='document',
+        uselist=False,
+    )
+
+
+class DocumentText(Base):
+    __tablename__ = 'document_text'
+
+    document_id: Mapped[int] = mapped_column(
+        ForeignKey('documents.id'),
+        primary_key=True,
+    )
+    text: Mapped[str]
+    document: Mapped['Document'] = relationship(
+        back_populates='text_data',
     )

@@ -14,3 +14,12 @@ def create_user(
     user = User(username=username, email=email, password_hash=password_hash)
     db.add(user)
     return user
+
+
+async def get_user_by_name(
+    username: str,
+    db: AsyncSession,
+) -> User  | None:
+    stmt = select(User).where(User.username == username)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
