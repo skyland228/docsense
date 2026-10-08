@@ -36,6 +36,8 @@ class Document(Base):
     text_data: Mapped['DocumentText | None'] = relationship(
         back_populates='document',
         uselist=False,
+        cascade='all, delete-orphan',
+        passive_deletes=True,
     )
 
 
