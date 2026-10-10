@@ -76,3 +76,19 @@ async def authorized_client(client, test_user):
     client.headers["Authorization"] = f"Bearer {token}"
 
     yield client
+
+
+@pytest_asyncio.fixture
+async def created_document(authorized_client):
+    response = await authorized_client.post(
+        '/documents',
+        files={
+            'file':(
+                'document_1.txt',
+                b'document_1',
+                'text/plain',
+            )
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
