@@ -23,7 +23,7 @@ async def upload_document(
         document = await service.upload_document(file, current_user.id, db)
     except document_exceptions.FileTooLargeError as exc:
         raise HTTPException(
-            status_code=status.HTTP_413_PAYLOAD_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail='File too large',
         ) from exc
     except document_exceptions.FailedSaveDocumentError as exc:
@@ -150,7 +150,6 @@ async def process_document(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Failed to read document',
         )
-    
     return document
 
 

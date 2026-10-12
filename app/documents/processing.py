@@ -11,7 +11,7 @@ from app.documents import exceptions
 
 
 async def extract_document_text(file_path: Path, media_type: str) -> str:
-    if media_type == 'text/plain':
+    if media_type.startswith('text/'):
         return await extract_txt(file_path)
     elif media_type == 'application/pdf':
         try:
