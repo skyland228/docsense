@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.document import Document, DocumentStatus
+from app.db.models.document import Document, DocumentStatus, DocumentVersion
 from app.documents import exceptions as document_exceptions, processing
 from app.documents import repository
 from app.documents import storage
@@ -17,7 +17,7 @@ async def commit_or_fail(db: AsyncSession):
         raise document_exceptions.FailedChangeStatusError from e
 
     
-async def upload_document(file: UploadFile, user_id: int, db: AsyncSession) -> Document:
+async def upload_document(file: UploadFile, auto_extract: bool, user_id: int, db: AsyncSession) -> Document:
     upload_path = None
     try:
         original_filename, stored_filename, size, upload_path = await storage.save_file(file)
@@ -29,6 +29,18 @@ async def upload_document(file: UploadFile, user_id: int, db: AsyncSession) -> D
             user_id=user_id,
             db=db,
         )
+        await db.flush()
+        if auto_extract:
+            text = await processing.extract_document_text(upload_path, document.content_type)
+            await repository.fill_text(document_id=document.id, text=text, db=db)
+            repository.create_version(
+                document_id=document.id,
+                version_number=1,
+                file_path=str(upload_path),
+                extracted_text=text,
+                db=db,
+            )
+            document.status = DocumentStatus.ready
         await db.commit()
     except document_exceptions.FileTooLargeError:
         await db.rollback()
@@ -125,3 +137,24 @@ async def get_document_text(document_id: int, user_id, db: AsyncSession) -> str:
     if document_text is None:
         raise document_exceptions.DocumentTextNotReadyError
     return document_text.text
+
+
+async def create_version(
+    document_id: int,
+    file: UploadFile,
+    user_id: int,
+    db: AsyncSession
+) -> DocumentVersion:
+    document = await get_document(document_id, user_id, db)
+    *_, upload_path = await storage.save_file(file)
+    text = await processing.extract_document_text(upload_path, file.content_type)
+    number_version = await repository.get_next_version_number(document_id, db)
+    version = repository.create_version(
+        document_id,
+        number_version,
+        str(upload_path),
+        text,
+        db,
+    )
+    await db.commit()
+    return version

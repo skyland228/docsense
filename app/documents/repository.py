@@ -1,7 +1,7 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.document import Document, DocumentText
+from app.db.models.document import Document, DocumentText, DocumentVersion
 
 
 def create_document(
@@ -72,3 +72,28 @@ async def get_document_text(
     db: AsyncSession,
 ) -> DocumentText | None:
     return await db.get(DocumentText, document_id)
+
+
+def create_version(
+    document_id: int,
+    version_number: int,
+    file_path: str,
+    extracted_text: str,
+    db: AsyncSession,
+) -> DocumentVersion:
+    version = DocumentVersion(
+        document_id=document_id,
+        version_number=version_number,
+        file_path=file_path,
+        extracted_text=extracted_text,
+    )
+    db.add(version)
+    return version
+
+
+async def get_next_version_number(document_id: int, db: AsyncSession) -> int:
+    query = select(func.coalesce(func.max(DocumentVersion.version_number), 0)).where(
+        DocumentVersion.document_id == document_id
+    )
+    current_max = await db.scalar(query)
+    return (current_max or 0) + 1

@@ -2,12 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse, PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.document import Document
+from app.db.models.document import Document, DocumentVersion
 from app.db.models.user import User
 from app.dependencies import get_current_user, get_db
-from app.documents import exceptions as document_exceptions
+from app.documents.ai_service import ai_service
 from app.documents import service
-from app.documents.schemas import DocumentResponse
+from app.documents.schemas import (
+DocumentResponse,
+DocumentVersionResponse
+)
 
 
 router = APIRouter(prefix='/documents', tags=['document'])
@@ -16,10 +19,11 @@ router = APIRouter(prefix='/documents', tags=['document'])
 @router.post('', response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
     file: UploadFile,
+    auto_extract: bool = True,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> Document:
-    document = await service.upload_document(file, current_user.id, db)
+    document = await service.upload_document(file, auto_extract, current_user.id, db)
     return document
 
 
@@ -86,3 +90,27 @@ async def get_document_text(
 ) -> PlainTextResponse:
     text = await service.get_document_text(document_id, current_user.id, db)
     return PlainTextResponse(content=text)
+
+
+@router.post("/{document_id}/summarize")
+async def summarize_document(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    text = await service.get_document_text(document_id, current_user.id, db)
+    if not text:
+        raise HTTPException(status_code=404, detail="Документ не найден")
+    summary_result = await ai_service.summarize_text(text)
+    return PlainTextResponse(content=summary_result)
+
+
+@router.post('/{document_id}/version', response_model=DocumentVersionResponse)
+async def create_version(
+    document_id: int,
+    file: UploadFile,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DocumentVersionResponse:
+    version = await service.create_version(document_id, file, current_user.id, db)
+    return version

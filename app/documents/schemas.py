@@ -12,3 +12,14 @@ class DocumentResponse(BaseModel):
     content_type: str | None = None
     status: DocumentStatus
     error: str | None = None
+
+
+class DocumentSummaryResponse(BaseModel):
+    document_id: int
+    summary: str
+
+
+class DocumentVersionResponse(BaseModel):
+    document_id: int
+    version_number: int
+    extracted_text: str

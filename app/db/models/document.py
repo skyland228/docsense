@@ -2,7 +2,7 @@
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, func
+from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -39,7 +39,13 @@ class Document(Base):
         cascade='all, delete-orphan',
         passive_deletes=True,
     )
-
+    versions: Mapped[list["DocumentVersion"]] = relationship(
+        "DocumentVersion",
+        back_populates="document",
+        cascade="all, delete-orphan",
+        order_by="DocumentVersion.version_number",
+    )
+    
 
 class DocumentText(Base):
     __tablename__ = 'document_text'
@@ -52,3 +58,15 @@ class DocumentText(Base):
     document: Mapped['Document'] = relationship(
         back_populates='text_data',
     )
+
+
+class DocumentVersion(Base):
+    __tablename__ = 'document_versions'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'))
+    version_number: Mapped[int]
+    file_path: Mapped[str]
+    extracted_text: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    document: Mapped["Document"] = relationship("Document", back_populates="versions")
