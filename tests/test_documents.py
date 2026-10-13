@@ -37,7 +37,6 @@ async def test_upload_toolarge_file(authorized_client):
 async def test_upload_document_with_db_error(authorized_client, monkeypatch):
     async def broken_commit():
         raise Exception("DB failure")
-
     monkeypatch.setattr(AsyncSession, "commit", broken_commit)
     response = await authorized_client.post(
         "/documents",
@@ -135,7 +134,6 @@ async def test_process_document_exceptions(
 
     async def mock_process(*args, **kwargs):
         raise exception_to_raise
-
     monkeypatch.setattr(service, "process_document", mock_process)
     response = await authorized_client.post(f"/documents/{doc_id}/process")
     assert response.status_code == expected_status

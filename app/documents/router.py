@@ -19,18 +19,7 @@ async def upload_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> Document:
-    try:
-        document = await service.upload_document(file, current_user.id, db)
-    except document_exceptions.FileTooLargeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-            detail='File too large',
-        ) from exc
-    except document_exceptions.FailedSaveDocumentError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Failed to save document',
-        ) from exc
+    document = await service.upload_document(file, current_user.id, db)
     return document
 
 
@@ -48,13 +37,7 @@ async def get_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> Document:
-    try:
-        document = await service.get_document(document_id, current_user.id, db)
-    except document_exceptions.DocumentDoesNotExistError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Document does not exist',
-        ) from exc
+    document = await service.get_document(document_id, current_user.id, db)
     return document
 
 
@@ -64,22 +47,11 @@ async def download_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> FileResponse:
-    try:
-        file_path, original_filename, content_type = await service.get_file(
-            document_id,
-            current_user.id,
-            db
-        )
-    except document_exceptions.StoredFileNotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='File not found',
-        )
-    except document_exceptions.DocumentDoesNotExistError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Document does not exist',
-        )
+    file_path, original_filename, content_type = await service.get_file(
+        document_id,
+        current_user.id,
+        db
+    )
     return FileResponse(
         path=file_path,
         filename=original_filename,
@@ -93,18 +65,7 @@ async def delete_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> None:
-    try:
-        await service.delete_document(document_id, current_user.id, db)
-    except document_exceptions.DocumentDoesNotExistError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Document does not exist',
-        )
-    except document_exceptions.FailedToDeleteDocumentError:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Failed to delete document',
-        )
+    await service.delete_document(document_id, current_user.id, db)
 
 
 @router.post('/{document_id}/process', response_model=DocumentResponse)
@@ -113,43 +74,7 @@ async def process_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> Document:
-    try:
-        document = await service.process_document(document_id, current_user.id, db)
-    except document_exceptions.UnsupportedDocumentTypeError:
-        raise HTTPException(
-            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail='Unsupported document type',
-        )
-    except document_exceptions.DocumentAlreadyHandleError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Document is already being processed",
-        )
-    except document_exceptions.DocumentProcessingTimeoutError:
-        raise HTTPException(
-            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail='Document processing timeout',
-        )
-    except document_exceptions.DocumentDoesNotExistError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Document does not exist',
-        )
-    except document_exceptions.DocumentDecodeError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail='Document content could not be decoded',
-        )
-    except document_exceptions.FailedChangeStatusError:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Failed to process document',
-        )
-    except document_exceptions.DocumentReadError:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Failed to read document',
-        )
+    document = await service.process_document(document_id, current_user.id, db)
     return document
 
 
@@ -159,16 +84,5 @@ async def get_document_text(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> PlainTextResponse:
-    try:
-        text = await service.get_document_text(document_id, current_user.id, db)
-    except document_exceptions.DocumentDoesNotExistError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Document does not exist',
-        )
-    except document_exceptions.DocumentTextNotReadyError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Document text is not ready",
-        )
+    text = await service.get_document_text(document_id, current_user.id, db)
     return PlainTextResponse(content=text)

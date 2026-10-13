@@ -1,47 +1,79 @@
-class FileTooLargeError(Exception):
-    pass
+from fastapi import status
 
 
-class FailedSaveDocumentError(Exception):
-    pass
+class AppException(Exception):
+    status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail: str = "Internal server error"
+
+    def __init__(self, detail: str | None = None) -> None:
+        if detail is not None:
+            self.detail = detail
+        super().__init__(self.detail)
 
 
-class DocumentDoesNotExistError(Exception):
-    pass
+class FileTooLargeError(AppException):
+    status_code = status.HTTP_413_CONTENT_TOO_LARGE
+    detail = "File too large"
 
 
-class StoredFileNotFoundError(Exception):
-    pass
+class FailedSaveDocumentError(AppException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Failed to save document"
 
 
-class FailedToDeleteDocumentError(Exception):
-    pass
+class DocumentDoesNotExistError(AppException):
+    status_code = status.HTTP_404_NOT_FOUND
+    detail = "Document does not exist"
 
 
-class FailedChangeStatusError(Exception):
-    pass
+class StoredFileNotFoundError(AppException):
+    status_code = status.HTTP_404_NOT_FOUND
+    detail = "File not found"
 
 
-class DocumentAlreadyHandleError(Exception):
-    pass
+class FailedToDeleteDocumentError(AppException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Failed to delete document"
 
 
-class ProcessingError(Exception):
-    """Базовое исключение для всех ошибок обработки."""
-    pass
+class FailedChangeStatusError(AppException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Failed to process document"
+
+
+class DocumentAlreadyHandleError(AppException):
+    status_code = status.HTTP_409_CONFLICT
+    detail = "Document is already being processed"
+
+
+class DocumentTextNotReadyError(AppException):
+    status_code = status.HTTP_409_CONFLICT
+    detail = "Document text is not ready"
+
+
+class ProcessingError(AppException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Document processing error"
+
 
 class UnsupportedDocumentTypeError(ProcessingError):
-    pass
+    status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+    detail = "Unsupported document type"
+    def __init__(self, content_type: str | None = None):
+        self.content_type = content_type
+        super().__init__(self.detail)
+
 
 class DocumentProcessingTimeoutError(ProcessingError):
-    pass
+    status_code = status.HTTP_504_GATEWAY_TIMEOUT
+    detail = "Document processing timeout"
+
 
 class DocumentDecodeError(ProcessingError):
-    pass
+    status_code = status.HTTP_422_UNPROCESSABLE_CONTENT
+    detail = "Document content could not be decoded"
+
 
 class DocumentReadError(ProcessingError):
-    pass
-
-
-class DocumentTextNotReadyError(Exception):
-    pass
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Failed to read document"
