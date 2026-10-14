@@ -89,6 +89,7 @@ async def created_document(authorized_client):
                 'text/plain',
             )
         },
+        params={'auto_extract': False},
     )
     assert response.status_code == 201
     return response.json()

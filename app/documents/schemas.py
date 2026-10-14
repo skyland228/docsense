@@ -23,3 +23,15 @@ class DocumentVersionResponse(BaseModel):
     document_id: int
     version_number: int
     extracted_text: str
+
+
+class DocumentDiffRequest(BaseModel):
+    version_from: int
+    version_to: int
+
+
+class DocumentDiffResponse(BaseModel):
+    document_id: int
+    version_from: int
+    version_to: int
+    diff_summary: str

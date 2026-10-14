@@ -8,6 +8,8 @@ from app.dependencies import get_current_user, get_db
 from app.documents.ai_service import ai_service
 from app.documents import service
 from app.documents.schemas import (
+DocumentDiffRequest,
+DocumentDiffResponse,
 DocumentResponse,
 DocumentVersionResponse
 )
@@ -92,17 +94,26 @@ async def get_document_text(
     return PlainTextResponse(content=text)
 
 
-@router.post("/{document_id}/summarize")
-async def summarize_document(
+@router.post("/{document_id}/diff", response_model=DocumentDiffResponse)
+async def diff_document_versions(
     document_id: int,
+    body: DocumentDiffRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
-    text = await service.get_document_text(document_id, current_user.id, db)
-    if not text:
-        raise HTTPException(status_code=404, detail="Документ не найден")
-    summary_result = await ai_service.summarize_text(text)
-    return PlainTextResponse(content=summary_result)
+) -> DocumentDiffResponse:
+    diff_summary = await service.diff_document_versions(
+        document_id=document_id,
+        version_from_num=body.version_from,
+        version_to_num=body.version_to,
+        user_id=current_user.id,
+        db=db,
+    )
+    return DocumentDiffResponse(
+        document_id=document_id,
+        version_from=body.version_from,
+        version_to=body.version_to,
+        diff_summary=diff_summary,
+    )
 
 
 @router.post('/{document_id}/version', response_model=DocumentVersionResponse)

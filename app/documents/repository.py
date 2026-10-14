@@ -97,3 +97,15 @@ async def get_next_version_number(document_id: int, db: AsyncSession) -> int:
     )
     current_max = await db.scalar(query)
     return (current_max or 0) + 1
+
+
+async def get_version_by_number(
+    document_id: int,
+    version_number: int,
+    db: AsyncSession,
+) -> DocumentVersion | None:
+    query = select(DocumentVersion).where(
+        DocumentVersion.document_id == document_id,
+        DocumentVersion.version_number == version_number,
+    )
+    return await db.scalar(query)

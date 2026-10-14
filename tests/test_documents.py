@@ -13,6 +13,7 @@ async def test_upload_document(authorized_client):
     response = await authorized_client.post(
         "/documents",
         files={"file": ("document_1.txt", content, "text/plain")},
+        params={'auto_extract': False}
     )
     data = response.json()
     assert response.status_code == 201
@@ -69,6 +70,7 @@ async def test_process_document_supported_and_unsupported_types(
         await authorized_client.post(
             "/documents",
             files={"file": ("document_1", file_bytes, content_type)},
+            params={'auto_extract': False},
         )
     ).json()
 

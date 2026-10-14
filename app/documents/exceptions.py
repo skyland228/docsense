@@ -77,3 +77,13 @@ class DocumentDecodeError(ProcessingError):
 class DocumentReadError(ProcessingError):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     detail = "Failed to read document"
+
+
+class InvalidPdfError(ProcessingError):
+    status_code = 400
+    detail = 'Invalid PDF'
+
+
+class DocumentVersionDoesNotExist(AppException):
+    status_code = 404
+    detail = 'Version does not exist'

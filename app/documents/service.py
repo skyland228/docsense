@@ -4,6 +4,7 @@ from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.document import Document, DocumentStatus, DocumentVersion
+from app.documents.ai_service import ai_service
 from app.documents import exceptions as document_exceptions, processing
 from app.documents import repository
 from app.documents import storage
@@ -42,7 +43,7 @@ async def upload_document(file: UploadFile, auto_extract: bool, user_id: int, db
             )
             document.status = DocumentStatus.ready
         await db.commit()
-    except document_exceptions.FileTooLargeError:
+    except (document_exceptions.FileTooLargeError, document_exceptions.ProcessingError):
         await db.rollback()
         raise
     except Exception as exc:
@@ -158,3 +159,23 @@ async def create_version(
     )
     await db.commit()
     return version
+
+
+async def diff_document_versions(
+    document_id: int,
+    version_from_num: int,
+    version_to_num: int,
+    user_id: int,
+    db: AsyncSession,
+) -> str:
+    await get_document(document_id, user_id, db)
+    v_from = await repository.get_version_by_number(document_id, version_from_num, db)
+    if not v_from:
+        raise document_exceptions.DocumentVersionDoesNotExist(detail=f'Версия {version_from_num} не найдена')
+    v_to = await repository.get_version_by_number(document_id, version_to_num, db)
+    if not v_to:
+        raise document_exceptions.DocumentVersionDoesNotExist(detail=f'Версия {version_to_num} не найдена')
+    delta_lines = processing.compute_text_diff(v_from.extracted_text, v_to.extracted_text)
+    if delta_lines:
+        return await ai_service.diff_versions(delta_lines)
+    return 'no changes'
