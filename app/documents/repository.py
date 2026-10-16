@@ -1,7 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.document import Document, DocumentText, DocumentVersion
+from app.db.models.document import Document, DocumentDiff, DocumentText, DocumentVersion
 
 
 def create_document(
@@ -109,3 +109,36 @@ async def get_version_by_number(
         DocumentVersion.version_number == version_number,
     )
     return await db.scalar(query)
+
+
+def create_document_diff(
+    document_id: int,
+    version_from_id: int,
+    version_to_id: int,
+    delta_lines: str,
+    ai_summary: str,
+    db: AsyncSession,
+) -> DocumentDiff:
+    document_diff = DocumentDiff(
+        document_id=document_id,
+        from_version_id=version_from_id,
+        to_version_id=version_to_id,
+        raw_diff=delta_lines,
+        ai_summary=ai_summary,
+    )
+    db.add(document_diff)
+    return document_diff
+
+
+async def get_document_diff(
+    document_id: int,
+    version_from_num: int,
+    version_to_num: int,
+    db: AsyncSession,
+) -> DocumentDiff | None:
+    stmt = select(DocumentDiff).where(
+        DocumentDiff.document_id == document_id,
+        DocumentDiff.from_version_id == version_from_num,
+        DocumentDiff.to_version_id == version_to_num,
+        )
+    return (await db.execute(stmt)).scalar_one_or_none()

@@ -87,3 +87,11 @@ class InvalidPdfError(ProcessingError):
 class DocumentVersionDoesNotExist(AppException):
     status_code = 404
     detail = 'Version does not exist'
+
+
+class DocumentVersionTooDifferentError(AppException):
+    status_code = 422
+    detail = (
+        "The uploaded document is too different "
+        "from the previous version"
+    )

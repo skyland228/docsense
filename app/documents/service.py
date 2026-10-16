@@ -145,20 +145,44 @@ async def create_version(
     file: UploadFile,
     user_id: int,
     db: AsyncSession
-) -> DocumentVersion:
+) -> tuple[DocumentVersion, float | None, str | None]:
     document = await get_document(document_id, user_id, db)
-    *_, upload_path = await storage.save_file(file)
-    text = await processing.extract_document_text(upload_path, file.content_type)
-    number_version = await repository.get_next_version_number(document_id, db)
-    version = repository.create_version(
-        document_id,
-        number_version,
-        str(upload_path),
-        text,
-        db,
-    )
-    await db.commit()
-    return version
+    upload_path = None
+    try:
+        *_, upload_path = await storage.save_file(file)
+        text = await processing.extract_document_text(upload_path, file.content_type)
+        number_version = await repository.get_next_version_number(document_id, db)
+        previous_version = await repository.get_version_by_number(
+            document_id,
+            number_version - 1,
+            db,
+        )
+        similarity = None
+        warning = None
+        if previous_version is not None:
+            similarity = processing.calculate_similarity(
+                previous_version.extracted_text,
+                text,
+            )
+            if similarity > 0.7:
+                warning = None
+            elif similarity > 0.2:
+                warning = 'New version differs significantly from the previous version'
+            else:
+                raise document_exceptions.DocumentVersionTooDifferentError  
+        version = repository.create_version(
+                document_id,
+                number_version,
+                str(upload_path),
+                text,
+                db,
+            )
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        storage.delete_file(upload_path)
+        raise 
+    return version, similarity, warning
 
 
 async def diff_document_versions(
@@ -171,11 +195,34 @@ async def diff_document_versions(
     await get_document(document_id, user_id, db)
     v_from = await repository.get_version_by_number(document_id, version_from_num, db)
     if not v_from:
-        raise document_exceptions.DocumentVersionDoesNotExist(detail=f'Версия {version_from_num} не найдена')
+        raise document_exceptions.DocumentVersionDoesNotExist(
+            detail=f'Версия {version_from_num} не найдена')
     v_to = await repository.get_version_by_number(document_id, version_to_num, db)
     if not v_to:
-        raise document_exceptions.DocumentVersionDoesNotExist(detail=f'Версия {version_to_num} не найдена')
-    delta_lines = processing.compute_text_diff(v_from.extracted_text, v_to.extracted_text)
+        raise document_exceptions.DocumentVersionDoesNotExist(
+            detail=f'Версия {version_to_num} не найдена')
+    document_diff = await repository.get_document_diff(
+        document_id,
+        v_from.id,
+        v_to.id,
+        db,
+    )
+    if document_diff:
+        return document_diff.ai_summary
+    delta_lines = processing.compute_text_diff(
+        v_from.extracted_text,
+        v_to.extracted_text
+    )
     if delta_lines:
-        return await ai_service.diff_versions(delta_lines)
+        ai_summary = await ai_service.diff_versions(delta_lines)
+        repository.create_document_diff(
+            document_id,
+            v_from.id,
+            v_to.id,
+            delta_lines,
+            ai_summary,
+            db,
+        )
+        await db.commit()
+        return ai_summary
     return 'no changes'

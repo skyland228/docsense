@@ -2,7 +2,9 @@
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Text, func
+from sqlalchemy import (
+DateTime, Enum as SQLEnum, ForeignKey, Text, func, UniqueConstraint
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -64,9 +66,49 @@ class DocumentVersion(Base):
     __tablename__ = 'document_versions'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    document_id: Mapped[int] = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'))
+    document_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            'documents.id',
+            ondelete='CASCADE'
+            ),
+        )
     version_number: Mapped[int]
     file_path: Mapped[str]
     extracted_text: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     document: Mapped["Document"] = relationship("Document", back_populates="versions")
+
+
+class DocumentDiff(Base):
+    __tablename__ = 'document_diffs'
+
+    __table_args__ = (
+        UniqueConstraint(
+            'document_id',
+            'from_version_id',
+            'to_version_id',
+            name='uq_document_diff_versions',
+        ),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    document_id: Mapped[int] = mapped_column(
+        ForeignKey(
+        'documents.id',
+        ondelete='CASCADE',
+        ),
+    )
+    from_version_id: Mapped[int] = mapped_column(
+        ForeignKey(
+        'document_versions.id',
+        ondelete='CASCADE',
+        ),
+    ) 
+    to_version_id: Mapped[int] = mapped_column(
+        ForeignKey(
+        'document_versions.id',
+        ondelete='CASCADE',
+        ),
+    )
+    raw_diff: Mapped[str] = mapped_column(Text)
+    ai_summary: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

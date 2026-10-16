@@ -116,12 +116,22 @@ async def diff_document_versions(
     )
 
 
-@router.post('/{document_id}/version', response_model=DocumentVersionResponse)
+@router.post(
+    '/{document_id}/version',
+    response_model=DocumentVersionResponse,
+    status_code=201,
+)
 async def create_version(
     document_id: int,
     file: UploadFile,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> DocumentVersionResponse:
-    version = await service.create_version(document_id, file, current_user.id, db)
-    return version
+    version, similarity, warning = await service.create_version(document_id, file, current_user.id, db)
+    return DocumentVersionResponse(
+        document_id=document_id,
+        version_number=version.version_number,
+        extracted_text=version.extracted_text,
+        similarity=similarity,
+        warning=warning,
+    )

@@ -23,6 +23,8 @@ class DocumentVersionResponse(BaseModel):
     document_id: int
     version_number: int
     extracted_text: str
+    similarity: float | None
+    warning: str | None
 
 
 class DocumentDiffRequest(BaseModel):

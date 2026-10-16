@@ -55,3 +55,10 @@ def compute_text_diff(text_v1: str, text_v2: str) -> str | None:
     if delta_lines:
         return "\n".join(delta_lines)
     return None
+
+
+def calculate_similarity(old_text: str, new_text: str) -> float:
+    old_words = old_text.lower().split()
+    new_words = new_text.lower().split()
+
+    return difflib.SequenceMatcher(None, old_words, new_words).ratio()
