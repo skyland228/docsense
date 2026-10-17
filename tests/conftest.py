@@ -45,6 +45,12 @@ async def setup_database():
 
 
 @pytest_asyncio.fixture
+async def db_session():
+    async with TestSessionLocal() as session:
+        yield session
+
+        
+@pytest_asyncio.fixture
 async def client():
     transport = ASGITransport(app=app)
 
@@ -90,6 +96,23 @@ async def created_document(authorized_client):
             )
         },
         params={'auto_extract': False},
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
+@pytest_asyncio.fixture
+async def created_document_with_text(authorized_client):
+    response = await authorized_client.post(
+        '/documents',
+        files={
+            'file':(
+                'document_1.txt',
+                b'document_1',
+                'text/plain',
+            )
+        },
+        params={'auto_extract': True},
     )
     assert response.status_code == 201
     return response.json()

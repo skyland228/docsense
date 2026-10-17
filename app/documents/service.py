@@ -181,7 +181,7 @@ async def create_version(
     except Exception:
         await db.rollback()
         storage.delete_file(upload_path)
-        raise 
+        raise
     return version, similarity, warning
 
 

@@ -63,7 +63,7 @@ dist/
 wheels/
 
 pip-wheel-metadata/
-
+script.py
 
 # =========================
 # Logs
