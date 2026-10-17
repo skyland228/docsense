@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.document import Document, DocumentDiff, DocumentText, DocumentVersion
 
 
+# Document CRUD
 def create_document(
     original_filename: str,
     stored_filename: str,
@@ -24,30 +25,38 @@ def create_document(
 
 
 async def get_documents(user_id: int, db: AsyncSession) -> list[Document]:
-    stmt = select(Document).where(Document.user_id == user_id)
-    results = await db.execute(stmt)
-    return results.scalars().all()
+    query = select(Document).where(Document.user_id == user_id)
+    result = await db.execute(query)
+    return result.scalars().all()
 
 
-async def get_document(document_id: int, user_id: int, db: AsyncSession) -> Document:
-    stmt = select(Document).where(
+async def get_document(
+    document_id: int,
+    user_id: int,
+    db: AsyncSession,
+) -> Document | None:
+    query = select(Document).where(
         Document.id == document_id,
         Document.user_id == user_id,
     )
-    result = await db.execute(stmt)
+    result = await db.execute(query)
     return result.scalar_one_or_none()
 
 
 async def get_document_for_update(
-        document_id: int,
-        user_id: int,
-        db: AsyncSession,
+    document_id: int,
+    user_id: int,
+    db: AsyncSession,
 ) -> Document | None:
-    stmt = select(Document).where(
-        Document.id == document_id,
-        Document.user_id == user_id,
-    ).with_for_update()
-    result = await db.execute(stmt)
+    query = (
+        select(Document)
+        .where(
+            Document.id == document_id,
+            Document.user_id == user_id,
+        )
+        .with_for_update()
+    )
+    result = await db.execute(query)
     return result.scalar_one_or_none()
 
 
@@ -55,17 +64,15 @@ async def delete_document(document: Document, db: AsyncSession) -> None:
     await db.delete(document)
 
 
+# Document processing
 async def fill_text(document_id: int, text: str, db: AsyncSession) -> None:
     document_text = await db.get(DocumentText, document_id)
     if document_text is None:
-        document_text = DocumentText(
-            document_id=document_id,
-            text=text,
-        )
+        document_text = DocumentText(document_id=document_id, text=text)
         db.add(document_text)
     else:
         document_text.text = text
-        
+
 
 async def get_document_text(
     document_id: int,
@@ -74,18 +81,23 @@ async def get_document_text(
     return await db.get(DocumentText, document_id)
 
 
+# Document versioning
 def create_version(
     document_id: int,
     version_number: int,
     file_path: str,
     extracted_text: str,
     db: AsyncSession,
+    similarity: float | None = None,
+    msg: str | None = None,
 ) -> DocumentVersion:
     version = DocumentVersion(
         document_id=document_id,
         version_number=version_number,
         file_path=file_path,
         extracted_text=extracted_text,
+        similarity=similarity,
+        msg=msg,
     )
     db.add(version)
     return version
@@ -96,7 +108,20 @@ async def get_next_version_number(document_id: int, db: AsyncSession) -> int:
         DocumentVersion.document_id == document_id
     )
     current_max = await db.scalar(query)
-    return (current_max or 0) + 1
+    return current_max + 1
+
+
+async def get_versions(
+    document_id: int,
+    db: AsyncSession,
+) -> list[DocumentVersion]:
+    query = (
+        select(DocumentVersion)
+        .where(DocumentVersion.document_id == document_id)
+        .order_by(DocumentVersion.version_number)
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
 
 
 async def get_version_by_number(
@@ -111,19 +136,20 @@ async def get_version_by_number(
     return await db.scalar(query)
 
 
+# AI version comparison
 def create_document_diff(
     document_id: int,
-    version_from_id: int,
-    version_to_id: int,
-    delta_lines: str,
+    from_version_id: int,
+    to_version_id: int,
+    raw_diff: str,
     ai_summary: str,
     db: AsyncSession,
 ) -> DocumentDiff:
     document_diff = DocumentDiff(
         document_id=document_id,
-        from_version_id=version_from_id,
-        to_version_id=version_to_id,
-        raw_diff=delta_lines,
+        from_version_id=from_version_id,
+        to_version_id=to_version_id,
+        raw_diff=raw_diff,
         ai_summary=ai_summary,
     )
     db.add(document_diff)
@@ -132,13 +158,13 @@ def create_document_diff(
 
 async def get_document_diff(
     document_id: int,
-    version_from_num: int,
-    version_to_num: int,
+    from_version_id: int,
+    to_version_id: int,
     db: AsyncSession,
 ) -> DocumentDiff | None:
-    stmt = select(DocumentDiff).where(
+    query = select(DocumentDiff).where(
         DocumentDiff.document_id == document_id,
-        DocumentDiff.from_version_id == version_from_num,
-        DocumentDiff.to_version_id == version_to_num,
-        )
-    return (await db.execute(stmt)).scalar_one_or_none()
+        DocumentDiff.from_version_id == from_version_id,
+        DocumentDiff.to_version_id == to_version_id,
+    )
+    return await db.scalar(query)

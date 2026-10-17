@@ -6,7 +6,7 @@ from sqlalchemy import select
 from app.db.models.document import DocumentVersion
 
 
-# Identical content is accepted as a new version without a warning.
+# Identical content is accepted as a new version without a message.
 @pytest.mark.asyncio
 async def test_create_version_with_identical_content(
     authorized_client, created_document_with_text
@@ -32,12 +32,12 @@ async def test_create_version_with_identical_content(
     assert response.status_code == 201
     assert response_data["extracted_text"] == "document_1"
     assert response_data["similarity"] == 1
-    assert response_data["warning"] is None
+    assert response_data["msg"] is None
 
 
-# A related version is accepted, but a low similarity score produces a warning.
+# A related version is accepted, but a low similarity score produces a message.
 @pytest.mark.asyncio
-async def test_create_version_with_similarity_warning(
+async def test_create_version_with_similarity_message(
     authorized_client, created_document_with_text
 ):
     current_text = (
@@ -61,10 +61,21 @@ async def test_create_version_with_similarity_warning(
     assert response.status_code == 201
     assert response_data["extracted_text"] == "document_1 new"
     assert response_data["similarity"] == pytest.approx(2 / 3)
-    assert response_data["warning"] == (
+    assert response_data["msg"] == (
         "New version differs significantly "
         "from the previous version"
     )
+
+    version_response = await authorized_client.get(
+        f"/documents/{created_document_with_text['id']}"
+        f"/versions/{response_data['version_number']}"
+    )
+    saved_version = version_response.json()
+
+    assert version_response.status_code == 200
+    assert saved_version["version_number"] == 2
+    assert saved_version["similarity"] == pytest.approx(2 / 3)
+    assert saved_version["msg"] == response_data["msg"]
 
 
 # Unrelated content is rejected and must not create a database record.

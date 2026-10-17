@@ -1,23 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, UploadFile, status
 from fastapi.responses import FileResponse, PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.document import Document, DocumentVersion
+from app.db.models.document import Document
 from app.db.models.user import User
 from app.dependencies import get_current_user, get_db
-from app.documents.ai_service import ai_service
 from app.documents import service
 from app.documents.schemas import (
-DocumentDiffRequest,
-DocumentDiffResponse,
-DocumentResponse,
-DocumentVersionResponse
+    DocumentDiffRequest,
+    DocumentDiffResponse,
+    DocumentResponse,
+    DocumentVersionListResponse,
+    DocumentVersionResponse,
 )
 
 
 router = APIRouter(prefix='/documents', tags=['document'])
 
 
+# Document CRUD
 @router.post('', response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
     file: UploadFile,
@@ -47,6 +48,15 @@ async def get_document(
     return document
 
 
+@router.delete('/{document_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_document(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    await service.delete_document(document_id, current_user.id, db)
+
+
 @router.get('/{document_id}/file')
 async def download_document(
     document_id: int,
@@ -65,15 +75,7 @@ async def download_document(
     )
 
 
-@router.delete('/{document_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def delete_document(
-    document_id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> None:
-    await service.delete_document(document_id, current_user.id, db)
-
-
+# Document processing
 @router.post('/{document_id}/process', response_model=DocumentResponse)
 async def process_document(
     document_id: int,
@@ -94,28 +96,7 @@ async def get_document_text(
     return PlainTextResponse(content=text)
 
 
-@router.post("/{document_id}/diff", response_model=DocumentDiffResponse)
-async def diff_document_versions(
-    document_id: int,
-    body: DocumentDiffRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> DocumentDiffResponse:
-    diff_summary = await service.diff_document_versions(
-        document_id=document_id,
-        version_from_num=body.version_from,
-        version_to_num=body.version_to,
-        user_id=current_user.id,
-        db=db,
-    )
-    return DocumentDiffResponse(
-        document_id=document_id,
-        version_from=body.version_from,
-        version_to=body.version_to,
-        diff_summary=diff_summary,
-    )
-
-
+# Document versioning
 @router.post(
     '/{document_id}/version',
     response_model=DocumentVersionResponse,
@@ -127,11 +108,69 @@ async def create_version(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> DocumentVersionResponse:
-    version, similarity, warning = await service.create_version(document_id, file, current_user.id, db)
+    version, similarity, msg = await service.create_version(
+        document_id, file, current_user.id, db
+    )
     return DocumentVersionResponse(
         document_id=document_id,
         version_number=version.version_number,
         extracted_text=version.extracted_text,
         similarity=similarity,
-        warning=warning,
+        msg=msg,
+    )
+
+
+@router.get('/{document_id}/versions', response_model=list[DocumentVersionListResponse])
+async def get_versions(
+    document_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[DocumentVersionListResponse]:
+    result = await service.get_versions(
+        document_id,
+        current_user.id,
+        db,
+    )
+    return result
+
+
+@router.get(
+    '/{document_id}/versions/{version_number}',
+    response_model=DocumentVersionResponse,
+)
+async def get_version(
+    document_id: int,
+    version_number: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DocumentVersionResponse:
+    result = await service.get_version(
+        document_id,
+        version_number,
+        current_user.id,
+        db,
+    )
+    return result
+
+
+# AI version comparison
+@router.post("/{document_id}/diff", response_model=DocumentDiffResponse)
+async def diff_document_versions(
+    document_id: int,
+    body: DocumentDiffRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DocumentDiffResponse:
+    diff_summary = await service.diff_document_versions(
+        document_id=document_id,
+        version_from_number=body.version_from,
+        version_to_number=body.version_to,
+        user_id=current_user.id,
+        db=db,
+    )
+    return DocumentDiffResponse(
+        document_id=document_id,
+        version_from=body.version_from,
+        version_to=body.version_to,
+        diff_summary=diff_summary,
     )

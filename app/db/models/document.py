@@ -76,6 +76,8 @@ class DocumentVersion(Base):
     file_path: Mapped[str]
     extracted_text: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    similarity: Mapped[float] = mapped_column(nullable=True)
+    msg: Mapped[str | None] = mapped_column(Text, nullable=True)
     document: Mapped["Document"] = relationship("Document", back_populates="versions")
 
 

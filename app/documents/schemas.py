@@ -24,7 +24,14 @@ class DocumentVersionResponse(BaseModel):
     version_number: int
     extracted_text: str
     similarity: float | None
-    warning: str | None
+    msg: str | None
+
+
+class DocumentVersionListResponse(BaseModel):
+    document_id: int
+    version_number: int
+    similarity: float | None
+    msg: str | None
 
 
 class DocumentDiffRequest(BaseModel):
