@@ -14,6 +14,15 @@ async def test_download_document(authorized_client, created_document):
 
 
 @pytest.mark.asyncio
+async def test_download_document_unauthorized_user(client, created_document):
+    client.headers.pop("Authorization", None)
+    response = await client.get(f"/documents/{created_document['id']}/file")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
+@pytest.mark.asyncio
 async def test_download_document_file_not_found(
     authorized_client, created_document, monkeypatch
 ):

@@ -15,6 +15,15 @@ async def test_delete_document(authorized_client, created_document):
 
 
 @pytest.mark.asyncio
+async def test_delete_document_unauthorized_user(client, created_document):
+    client.headers.pop("Authorization", None)
+    response = await client.delete(f"/documents/{created_document['id']}")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
+@pytest.mark.asyncio
 async def test_delete_nonexistent_document(authorized_client):
     response = await authorized_client.delete("/documents/999")
 

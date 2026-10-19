@@ -6,6 +6,15 @@ import pytest
 from app.documents import exceptions as document_exceptions, processing, service
 
 
+@pytest.mark.asyncio
+async def test_process_document_unauthorized_user(client, created_document):
+    client.headers.pop("Authorization", None)
+    response = await client.post(f"/documents/{created_document['id']}/process")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
 @pytest.mark.parametrize(
     "content_type, expected_status",
     [

@@ -98,7 +98,7 @@ async def get_document_text(
 
 # Document versioning
 @router.post(
-    '/{document_id}/version',
+    '/{document_id}/versions',
     response_model=DocumentVersionResponse,
     status_code=201,
 )

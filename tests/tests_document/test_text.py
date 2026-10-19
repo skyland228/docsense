@@ -32,6 +32,15 @@ async def test_get_document_text_not_ready(authorized_client, created_document):
 
 
 @pytest.mark.asyncio
+async def test_get_document_text_unauthorized_user(client, created_document_with_text):
+    client.headers.pop("Authorization", None)
+    response = await client.get(f"/documents/{created_document_with_text['id']}/text")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
+@pytest.mark.asyncio
 async def test_get_document_text_nonexistent(authorized_client):
     response = await authorized_client.get("/documents/999/text")
 

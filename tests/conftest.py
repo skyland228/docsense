@@ -76,6 +76,25 @@ async def test_user():
 
 
 @pytest_asyncio.fixture
+async def another_user():
+    async with TestSessionLocal() as db:
+        user = User(
+            username="user_2",
+            email="test2@example.com",
+            password_hash=hash_password("test6789"),
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        yield user
+
+
+@pytest_asyncio.fixture
+async def another_user_token(another_user):
+    return create_access_token(another_user.id)
+
+
+@pytest_asyncio.fixture
 async def authorized_client(client, test_user):
     token = create_access_token(test_user.id)
 

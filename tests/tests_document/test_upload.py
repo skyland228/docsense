@@ -23,6 +23,18 @@ async def test_upload_document(authorized_client):
 
 
 @pytest.mark.asyncio
+async def test_upload_document_unauthorized_user(client):
+    client.headers.pop("Authorization", None)
+    response = await client.post(
+        "/documents",
+        files={"file": ("document_1.txt", b"document_1", "text/plain")},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
+@pytest.mark.asyncio
 async def test_upload_toolarge_file(authorized_client):
     response = await authorized_client.post(
         "/documents",
