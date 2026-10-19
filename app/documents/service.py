@@ -26,8 +26,8 @@ async def upload_document(
 ) -> Document:
     upload_path = None
     try:
-        original_filename, stored_filename, size, upload_path = (
-            await storage.save_file(file)
+        original_filename, stored_filename, size, upload_path = await storage.save_file(
+            file
         )
         document = repository.create_document(
             original_filename=original_filename,
@@ -196,10 +196,7 @@ async def create_version(
             if similarity <= 0.2:
                 raise document_exceptions.DocumentVersionTooDifferentError
             if similarity <= 0.7:
-                msg = (
-                    "New version differs significantly "
-                    "from the previous version"
-                )
+                msg = "New version differs significantly from the previous version"
 
         version = repository.create_version(
             document_id=document_id,

@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +18,7 @@ def create_user(
 async def get_user_by_name(
     username: str,
     db: AsyncSession,
-) -> User  | None:
+) -> User | None:
     stmt = select(User).where(User.username == username)
     result = await db.execute(stmt)
     return result.scalar_one_or_none()

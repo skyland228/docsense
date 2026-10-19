@@ -59,6 +59,7 @@ class ProcessingError(AppException):
 class UnsupportedDocumentTypeError(ProcessingError):
     status_code = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
     detail = "Unsupported document type"
+
     def __init__(self, content_type: str | None = None):
         self.content_type = content_type
         super().__init__(self.detail)
@@ -81,17 +82,14 @@ class DocumentReadError(ProcessingError):
 
 class InvalidPdfError(ProcessingError):
     status_code = 400
-    detail = 'Invalid PDF'
+    detail = "Invalid PDF"
 
 
 class DocumentVersionDoesNotExist(AppException):
     status_code = 404
-    detail = 'Version does not exist'
+    detail = "Version does not exist"
 
 
 class DocumentVersionTooDifferentError(AppException):
     status_code = 422
-    detail = (
-        "The uploaded document is too different "
-        "from the previous version"
-    )
+    detail = "The uploaded document is too different from the previous version"

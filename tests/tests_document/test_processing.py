@@ -69,9 +69,7 @@ async def test_process_document_conflict(
 
     monkeypatch.setattr(processing, "extract_document_text", slow_extract)
 
-    task1 = asyncio.create_task(
-        authorized_client.post(f"/documents/{doc_id}/process")
-    )
+    task1 = asyncio.create_task(authorized_client.post(f"/documents/{doc_id}/process"))
     await started.wait()
     response2 = await authorized_client.post(f"/documents/{doc_id}/process")
     finish.set()

@@ -21,9 +21,9 @@ async def register(user_data: UserCreate, db: AsyncSession) -> User:
     except IntegrityError as exc:
         await db.rollback()
         error_message = str(exc).lower()
-        if 'email' in error_message:
+        if "email" in error_message:
             raise user_exceptions.UserWithThisEmailAlreadyExistsError from exc
-        if 'username' in error_message:
+        if "username" in error_message:
             raise user_exceptions.UserWithThisUsernameAlreadyExistsError from exc
         raise
     return user

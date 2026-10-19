@@ -65,8 +65,7 @@ async def test_create_version_with_similarity_message(
     assert response_data["extracted_text"] == "document_1 new"
     assert response_data["similarity"] == pytest.approx(2 / 3)
     assert response_data["msg"] == (
-        "New version differs significantly "
-        "from the previous version"
+        "New version differs significantly from the previous version"
     )
 
     version_response = await authorized_client.get(
@@ -127,8 +126,7 @@ async def test_reject_version_with_completely_different_content(
 
     assert response.status_code == 422
     assert response_data["detail"] == (
-        "The uploaded document is too different "
-        "from the previous version"
+        "The uploaded document is too different from the previous version"
     )
     assert len(versions) == 1
 

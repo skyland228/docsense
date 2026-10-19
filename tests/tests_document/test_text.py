@@ -23,9 +23,7 @@ async def test_get_pdf_document_text(authorized_client):
 
 @pytest.mark.asyncio
 async def test_get_document_text_not_ready(authorized_client, created_document):
-    response = await authorized_client.get(
-        f"/documents/{created_document['id']}/text"
-    )
+    response = await authorized_client.get(f"/documents/{created_document['id']}/text")
 
     assert response.status_code == 409
     assert response.json()["detail"] == "Document text is not ready"

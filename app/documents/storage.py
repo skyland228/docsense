@@ -6,20 +6,20 @@ from fastapi import UploadFile
 
 from app.documents import exceptions as document_exceptions
 
-UPLOAD_DIR = Path('uploads')
+UPLOAD_DIR = Path("uploads")
 MAX_FILE_SIZE = 5 * 1024 * 1024
 
 
 async def save_file(file: UploadFile) -> tuple[str, str, int, Path]:
-    original_filename = file.filename or 'document'
+    original_filename = file.filename or "document"
     extension = Path(original_filename).suffix
-    stored_filename = f'{uuid4()}{extension}'
+    stored_filename = f"{uuid4()}{extension}"
     UPLOAD_DIR.mkdir(exist_ok=True)
     upload_path = UPLOAD_DIR / stored_filename
     chunk_size = 1024 * 1024
     size = 0
     try:
-        async with aiofiles.open(upload_path, 'wb') as f:
+        async with aiofiles.open(upload_path, "wb") as f:
             while True:
                 chunk = await file.read(chunk_size)
                 if not chunk:

@@ -1,5 +1,3 @@
-
-
 from httpx import ASGITransport, AsyncClient
 import pytest_asyncio
 from sqlalchemy import make_url
@@ -7,8 +5,8 @@ from sqlalchemy.pool import NullPool
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
-    create_async_engine,    
-) 
+    create_async_engine,
+)
 
 from app.core.security import create_access_token, hash_password
 from app.db.database import Base
@@ -28,6 +26,7 @@ db_name = make_url(settings.test_database_url).database
 
 if db_name != "docsense_test":
     raise RuntimeError("Wrong test database!")
+
 
 async def override_get_db():
     async with TestSessionLocal() as db:
@@ -49,14 +48,14 @@ async def db_session():
     async with TestSessionLocal() as session:
         yield session
 
-        
+
 @pytest_asyncio.fixture
 async def client():
     transport = ASGITransport(app=app)
 
     async with AsyncClient(
         transport=transport,
-        base_url='http://test',
+        base_url="http://test",
     ) as client:
         yield client
 
@@ -65,9 +64,9 @@ async def client():
 async def test_user():
     async with TestSessionLocal() as db:
         user = User(
-            username='user_1',
-            email='test@example.com',
-            password_hash=hash_password('test12345'),
+            username="user_1",
+            email="test@example.com",
+            password_hash=hash_password("test12345"),
         )
         db.add(user)
         await db.commit()
@@ -97,24 +96,22 @@ async def another_user_token(another_user):
 @pytest_asyncio.fixture
 async def authorized_client(client, test_user):
     token = create_access_token(test_user.id)
-
     client.headers["Authorization"] = f"Bearer {token}"
-
     yield client
 
 
 @pytest_asyncio.fixture
 async def created_document(authorized_client):
     response = await authorized_client.post(
-        '/documents',
+        "/documents",
         files={
-            'file':(
-                'document_1.txt',
-                b'document_1',
-                'text/plain',
+            "file": (
+                "document_1.txt",
+                b"document_1",
+                "text/plain",
             )
         },
-        params={'auto_extract': False},
+        params={"auto_extract": False},
     )
     assert response.status_code == 201
     return response.json()
@@ -123,15 +120,15 @@ async def created_document(authorized_client):
 @pytest_asyncio.fixture
 async def created_document_with_text(authorized_client):
     response = await authorized_client.post(
-        '/documents',
+        "/documents",
         files={
-            'file':(
-                'document_1.txt',
-                b'document_1',
-                'text/plain',
+            "file": (
+                "document_1.txt",
+                b"document_1",
+                "text/plain",
             )
         },
-        params={'auto_extract': True},
+        params={"auto_extract": True},
     )
     assert response.status_code == 201
     return response.json()

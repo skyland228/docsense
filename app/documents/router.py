@@ -15,11 +15,11 @@ from app.documents.schemas import (
 )
 
 
-router = APIRouter(prefix='/documents', tags=['document'])
+router = APIRouter(prefix="/documents", tags=["document"])
 
 
 # Document CRUD
-@router.post('', response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
     file: UploadFile,
     auto_extract: bool = True,
@@ -30,7 +30,7 @@ async def upload_document(
     return document
 
 
-@router.get('', response_model=list[DocumentResponse])
+@router.get("", response_model=list[DocumentResponse])
 async def get_documents(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -38,7 +38,7 @@ async def get_documents(
     return await service.get_documents(current_user.id, db)
 
 
-@router.get('/{document_id}', response_model=DocumentResponse)
+@router.get("/{document_id}", response_model=DocumentResponse)
 async def get_document(
     document_id: int,
     current_user: User = Depends(get_current_user),
@@ -48,7 +48,7 @@ async def get_document(
     return document
 
 
-@router.delete('/{document_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_document(
     document_id: int,
     current_user: User = Depends(get_current_user),
@@ -57,16 +57,14 @@ async def delete_document(
     await service.delete_document(document_id, current_user.id, db)
 
 
-@router.get('/{document_id}/file')
+@router.get("/{document_id}/file")
 async def download_document(
     document_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> FileResponse:
     file_path, original_filename, content_type = await service.get_file(
-        document_id,
-        current_user.id,
-        db
+        document_id, current_user.id, db
     )
     return FileResponse(
         path=file_path,
@@ -76,7 +74,7 @@ async def download_document(
 
 
 # Document processing
-@router.post('/{document_id}/process', response_model=DocumentResponse)
+@router.post("/{document_id}/process", response_model=DocumentResponse)
 async def process_document(
     document_id: int,
     current_user: User = Depends(get_current_user),
@@ -86,7 +84,7 @@ async def process_document(
     return document
 
 
-@router.get('/{document_id}/text')
+@router.get("/{document_id}/text")
 async def get_document_text(
     document_id: int,
     current_user: User = Depends(get_current_user),
@@ -98,7 +96,7 @@ async def get_document_text(
 
 # Document versioning
 @router.post(
-    '/{document_id}/versions',
+    "/{document_id}/versions",
     response_model=DocumentVersionResponse,
     status_code=201,
 )
@@ -120,7 +118,7 @@ async def create_version(
     )
 
 
-@router.get('/{document_id}/versions', response_model=list[DocumentVersionListResponse])
+@router.get("/{document_id}/versions", response_model=list[DocumentVersionListResponse])
 async def get_versions(
     document_id: int,
     current_user: User = Depends(get_current_user),
@@ -135,7 +133,7 @@ async def get_versions(
 
 
 @router.get(
-    '/{document_id}/versions/{version_number}',
+    "/{document_id}/versions/{version_number}",
     response_model=DocumentVersionResponse,
 )
 async def get_version(
