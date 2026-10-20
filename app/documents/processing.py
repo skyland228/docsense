@@ -1,5 +1,5 @@
-import difflib
 import asyncio
+import difflib
 from pathlib import Path
 
 import aiofiles

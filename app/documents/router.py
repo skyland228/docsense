@@ -14,7 +14,6 @@ from app.documents.schemas import (
     DocumentVersionResponse,
 )
 
-
 router = APIRouter(prefix="/documents", tags=["document"])
 
 

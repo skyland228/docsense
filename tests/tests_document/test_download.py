@@ -1,6 +1,7 @@
 import pytest
 
-from app.documents import exceptions as document_exceptions, service
+from app.documents import exceptions as document_exceptions
+from app.documents import service
 
 
 @pytest.mark.asyncio

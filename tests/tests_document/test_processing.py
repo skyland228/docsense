@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from app.documents import exceptions as document_exceptions, processing, service
+from app.documents import exceptions as document_exceptions
+from app.documents import processing, service
 
 
 @pytest.mark.asyncio

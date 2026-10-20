@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi.security import OAuth2PasswordBearer
-
-from app.core.config import settings
 import jwt
+from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
 
+from app.core.config import settings
 
 SECRET_KEY = settings.secret_key
 ALGORITHM = "HS256"

@@ -3,9 +3,8 @@ import logging
 from fastapi import FastAPI
 
 from app.documents.router import router as document_router
-from app.users.router import router as user_router
 from app.handlers import register_handlers
-
+from app.users.router import router as user_router
 
 logging.getLogger("pypdf").setLevel(logging.ERROR)
 app = FastAPI()
