@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Документы — DocSense</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="/static/js/api.js" defer></script>
+    <script src="/static/js/documents.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="/app/documents">DocSense</a>
+        <nav>
+            <a href="/docs" target="_blank">API</a>
+            <button id="logout-button" class="button-secondary" type="button">Выйти</button>
+        </nav>
+    </header>
+
+    <main class="page">
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">Рабочее пространство</p>
+                <h1>Документы</h1>
+                <p>Загрузите PDF или TXT. DocSense сохранит файл и извлечёт текст.</p>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Загрузить документ</h2>
+            <form id="upload-form" class="upload-form">
+                <input name="file" type="file" accept=".pdf,.txt,application/pdf,text/plain" required>
+                <label class="checkbox-label">
+                    <input name="auto_extract" type="checkbox" checked>
+                    Сразу извлечь текст
+                </label>
+                <button type="submit">Загрузить</button>
+            </form>
+            <p id="message" class="message" aria-live="polite"></p>
+        </section>
+
+        <section class="section-heading">
+            <h2>Мои документы</h2>
+            <button id="refresh-button" class="button-secondary" type="button">Обновить</button>
+        </section>
+        <section id="documents" class="document-grid" aria-live="polite"></section>
+    </main>
+</body>
+</html>

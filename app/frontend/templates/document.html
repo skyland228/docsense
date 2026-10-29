@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Документ — DocSense</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="/static/js/api.js" defer></script>
+    <script src="/static/js/document.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="/app/documents">DocSense</a>
+        <nav>
+            <a href="/app/documents">Все документы</a>
+            <button id="logout-button" class="button-secondary" type="button">Выйти</button>
+        </nav>
+    </header>
+
+    <main class="page">
+        <a class="back-link" href="/app/documents">← Назад к документам</a>
+
+        <section id="document-header" class="page-heading document-heading">
+            <div>
+                <p class="eyebrow">Документ</p>
+                <h1 id="document-name">Загрузка...</h1>
+                <p id="document-meta"></p>
+            </div>
+            <span id="document-status" class="status">—</span>
+        </section>
+
+        <p id="message" class="message" aria-live="polite"></p>
+
+        <section class="actions panel">
+            <button id="process-button" type="button">Извлечь текст</button>
+            <button id="download-button" class="button-secondary" type="button">Скачать файл</button>
+            <button id="delete-button" class="button-danger" type="button">Удалить</button>
+        </section>
+
+        <section class="panel">
+            <div class="section-heading">
+                <h2>Извлечённый текст</h2>
+                <button id="text-button" class="button-secondary" type="button">Показать текст</button>
+            </div>
+            <pre id="document-text" class="text-output">Текст ещё не загружен.</pre>
+        </section>
+
+        <section class="panel">
+            <h2>Новая версия</h2>
+            <form id="version-form" class="upload-form">
+                <input name="file" type="file" accept=".pdf,.txt,application/pdf,text/plain" required>
+                <button type="submit">Загрузить версию</button>
+            </form>
+            <div id="versions" class="version-list"></div>
+        </section>
+
+        <section class="panel">
+            <h2>AI-сравнение версий</h2>
+            <form id="diff-form" class="compare-form">
+                <label>
+                    С версии
+                    <select id="version-from" required></select>
+                </label>
+                <label>
+                    На версию
+                    <select id="version-to" required></select>
+                </label>
+                <button type="submit">Сравнить</button>
+            </form>
+            <pre id="diff-result" class="text-output">Выберите две версии документа.</pre>
+        </section>
+    </main>
+</body>
+</html>

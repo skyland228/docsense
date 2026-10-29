@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — DocSense</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="/static/js/api.js" defer></script>
+    <script src="/static/js/login.js" defer></script>
+</head>
+<body class="auth-page">
+    <main class="auth-card">
+        <a class="brand" href="/">DocSense</a>
+        <p class="eyebrow">Управление документами</p>
+        <h1>Вход</h1>
+
+        <form id="login-form" class="form-stack">
+            <label>
+                Имя пользователя
+                <input name="username" autocomplete="username" required>
+            </label>
+            <label>
+                Пароль
+                <input name="password" type="password" autocomplete="current-password" required>
+            </label>
+            <button type="submit">Войти</button>
+        </form>
+
+        <p id="message" class="message" aria-live="polite"></p>
+        <p class="auth-link">Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
+    </main>
+</body>
+</html>
