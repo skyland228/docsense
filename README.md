@@ -1,136 +1,122 @@
-```markdown
 # DocSense
 
-A production-like backend service built with **FastAPI** for document management, text extraction, and note processing.
+DocSense is a backend API for uploading documents, extracting text, storing document versions, and comparing versions with AI.
 
-The project is designed to bridge fundamental backend concepts (clean architecture, user authentication, domain error handling) with practical data workflows: file ingestion, parsing, database persistence, and future AI-driven search and Q&A.
+The project intentionally contains only the FastAPI backend. Use Swagger UI at `/docs` to work with the API during development.
 
----
+## Features
 
-## Features & Implementation Status
+- User registration and JWT authentication.
+- Per-user access control for documents.
+- PDF and TXT upload, download, listing, and deletion.
+- Automatic or manual text extraction.
+- Document version history with similarity checks.
+- AI-generated summaries of changes between versions through the Groq API.
+- Asynchronous PostgreSQL access with SQLAlchemy.
+- Alembic database migrations.
+- Docker Compose configuration for local development.
+- Integration tests with pytest.
 
-### Core Features
+## Tech stack
 
-- **Document Flow**:
-  - Secure document upload (PDF, TXT) with local file storage persistence.
-  - Metadata inspection, document retrieval, file download, and document deletion.
-  - Text extraction pipeline parsing raw document content into dedicated database entities.
-- **Authentication & Security**:
-  - User registration and login flow.
-  - Stateless JWT-based authentication (`PyJWT`, `pwdlib`).
-  - Strict resource isolation: users can access, process, and delete only their own documents.
-- **Centralized Exception Handling**:
-  - Standardized domain exception hierarchy (`AppException`) with consistent HTTP status codes and response schemas.
-  - Centralized FastAPI exception handlers keeping route handlers clean and declarative.
-- **Database & Migrations**:
-  - Fully asynchronous PostgreSQL integration using SQLAlchemy 2.0 and `asyncpg`.
-  - Schema versioning and migration management via **Alembic**.
-- **Automated Testing**:
-  - Test suite built with **pytest** and `pytest-asyncio`.
-  - Comprehensive integration and end-to-end test coverage for the authentication flow and complete Document Flow.
+- FastAPI and Uvicorn
+- PostgreSQL, SQLAlchemy 2.0, and asyncpg
+- Alembic
+- Pydantic v2
+- PyJWT and pwdlib
+- pypdf and aiofiles
+- OpenAI Python client with a Groq-compatible endpoint
+- pytest, pytest-asyncio, and HTTPX
 
-### Roadmap
+## API
 
-- [x] User Registration & JWT Authentication
-- [x] Document Ingestion (PDF / TXT) & File Storage
-- [x] Document Text Extraction & Dedicated Model Persistence
-- [x] Centralized Exception Handling (`AppException`)
-- [x] Database Migrations (Alembic) & Comprehensive Tests
-- [ ] AI-Powered Q&A over Uploaded Documents
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/users` | Register a user |
+| `POST` | `/login` | Log in and receive a bearer token |
+| `POST` | `/documents` | Upload a document |
+| `GET` | `/documents` | List the current user's documents |
+| `GET` | `/documents/{id}` | Get document metadata |
+| `DELETE` | `/documents/{id}` | Delete a document |
+| `GET` | `/documents/{id}/file` | Download the original file |
+| `POST` | `/documents/{id}/process` | Extract document text |
+| `GET` | `/documents/{id}/text` | Return extracted text |
+| `POST` | `/documents/{id}/versions` | Upload a new version |
+| `GET` | `/documents/{id}/versions` | List document versions |
+| `GET` | `/documents/{id}/versions/{number}` | Get a specific version |
+| `POST` | `/documents/{id}/diff` | Compare two versions with AI |
 
----
+Protected endpoints require `Authorization: Bearer <token>`.
 
-## Tech Stack
-
-- **Framework**: FastAPI
-- **Data Validation & Settings**: Pydantic v2, Pydantic-Settings
-- **ORM & Database**: SQLAlchemy 2.0 (Async), PostgreSQL, asyncpg
-- **Migrations**: Alembic
-- **Security & Hashing**: PyJWT, pwdlib
-- **Testing**: pytest, pytest-asyncio, httpx
-
----
-
-## Project Structure
+## Project structure
 
 ```text
 app/
-├── core/             # Application configuration, security & JWT utilities
-├── db/               # Database engine, session setup, and SQLAlchemy models
-├── documents/        # Documents domain: router, service, repository, schemas, exceptions
-├── users/            # Users domain: auth router, user service, models, schemas
-├── handlers.py       # Global FastAPI exception handlers
-├── dependencies.py   # FastAPI dependencies (database session, current user)
-└── main.py           # Application entrypoint & router registration
-alembic/              # Alembic migration environments and revision scripts
-tests/                # Automated pytest suite and test fixtures
-
-```
----
-
-## Getting Started
-
-### 1. Prerequisites
-
-Ensure you have the following installed:
-* **Python 3.12+**
-* **PostgreSQL** instance running locally or via Docker
-Make sure both databases (`docsense` and `docsense_test`) are created in your PostgreSQL instance before running migrations or tests.
-
-### 2. Environment Setup
-
-Create your local `.env` file from the example template:
-
-```bash
-cp .env.example .env
+|-- core/          # Settings and security
+|-- db/            # Database session and SQLAlchemy models
+|-- documents/     # Document routes, services, repository, and schemas
+|-- users/         # Registration, login, and user logic
+|-- dependencies.py
+|-- handlers.py
+`-- main.py
+alembic/            # Database migrations
+tests/              # Integration tests
 ```
 
-Open `.env` and configure your credentials and connection strings:
+## Environment variables
+
+Copy `.env.example` to `.env` and set:
 
 ```dotenv
-DATABASE_URL=postgresql+asyncpg://<username>:<password>@localhost:5432/docsense
-TEST_DATABASE_URL=postgresql+asyncpg://<username>:<password>@localhost:5432/docsense_test
-SECRET_KEY=your_secret_key_here
+DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/docsense
+TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/docsense_test
+POSTGRES_PASSWORD=password
+SECRET_KEY=replace_with_a_random_secret
+GROQ_API_KEY=your_groq_api_key
 ```
 
-### 3. Installation
+`AI_MODEL` is optional and defaults to `openai/gpt-oss-20b`.
 
-Create a virtual environment and install the dependencies:
+## Local development
 
-```bash
+Create and activate a virtual environment:
+
+```powershell
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
 ```
 
-### 4. Database Migrations
+Apply migrations and start the API:
 
-Apply the database schema using Alembic:
-
-```bash
+```powershell
 alembic upgrade head
-```
-
-### 5. Running the Application
-
-Start the development server using Uvicorn:
-
-```bash
 uvicorn app.main:app --reload
 ```
 
-Once running, interactive API documentation is available at:
+Open:
 
-* **Swagger UI**: `http://127.0.0.1:8000/docs`
-* **ReDoc**: `http://127.0.0.1:8000/redoc`
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- ReDoc: `http://127.0.0.1:8000/redoc`
 
----
+## Docker development
 
-## Running Tests
+```powershell
+docker compose -f compose.yaml -f compose.dev.yaml up --build
+docker compose exec api alembic upgrade head
+```
 
-Execute the full automated test suite with `pytest`:
+The API is available at `http://127.0.0.1:8000`.
 
-```bash
+## Tests
+
+Create the database referenced by `TEST_DATABASE_URL`, then run:
+
+```powershell
 pytest
 ```
-```
+
+## Current limitations
+
+- Uploaded files are stored on the local filesystem.
+- AI comparison requires a valid Groq API key and external network access.
