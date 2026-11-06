@@ -70,8 +70,14 @@ async def upload_document(
     return document
 
 
-async def get_documents(user_id: int, db: AsyncSession) -> list[Document]:
-    return await repository.get_documents(user_id, db)
+async def get_documents(
+    limit: int | None,
+    offset: int | None,
+    search: str | None,
+    user_id: int,
+    db: AsyncSession,
+) -> list[Document]:
+    return await repository.get_documents(limit, offset, search, user_id, db)
 
 
 async def get_document(

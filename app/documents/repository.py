@@ -24,8 +24,22 @@ def create_document(
     return document
 
 
-async def get_documents(user_id: int, db: AsyncSession) -> list[Document]:
-    query = select(Document).where(Document.user_id == user_id)
+async def get_documents(
+    limit: int | None,
+    offset: int | None,
+    search: str | None,
+    user_id: int,
+    db: AsyncSession,
+) -> list[Document]:
+    query = (
+        select(Document)
+        .where(Document.user_id == user_id)
+        .order_by(Document.created_at.desc(), Document.id.asc())
+        .limit(limit)
+        .offset(offset)
+    )
+    if search:
+        query = query.where(Document.original_filename.ilike(f"%{search}%"))
     result = await db.execute(query)
     return result.scalars().all()
 

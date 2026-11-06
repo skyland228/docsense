@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, status
+from fastapi import APIRouter, Depends, Query, UploadFile, status
 from fastapi.responses import FileResponse, PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,10 +31,13 @@ async def upload_document(
 
 @router.get("", response_model=list[DocumentResponse])
 async def get_documents(
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    search: str = "",
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> list[Document]:
-    return await service.get_documents(current_user.id, db)
+    return await service.get_documents(limit, offset, search, current_user.id, db)
 
 
 @router.get("/{document_id}", response_model=DocumentResponse)
