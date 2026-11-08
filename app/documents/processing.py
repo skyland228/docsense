@@ -42,6 +42,8 @@ def extract_pdf(file_path: Path) -> str:
         for page in reader.pages:
             text = page.extract_text()
             if text:
+                if "\x00" in text:
+                    text = text.replace("\x00", "")
                 parts.append(text)
     except PdfReadError as e:
         raise exceptions.InvalidPdfError

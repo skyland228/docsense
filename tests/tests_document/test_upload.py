@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.document import DocumentStatus
@@ -20,6 +21,25 @@ async def test_upload_document(authorized_client):
     assert data["size"] == len(content)
     assert data["content_type"] == "text/plain"
     assert data["status"] == DocumentStatus.uploaded
+
+
+@pytest.mark.asyncio
+async def test_upload_pdf_with_null_bytes(authorized_client):
+    pdf_path = Path(__file__).parent.parent / "fixtures" / "pdf_with_nul_test.pdf"
+    response = await authorized_client.post(
+        "/documents",
+        files={
+            "file": ("pdf_with_nul_test.pdf", pdf_path.read_bytes(), "application/pdf")
+        },
+    )
+    assert response.status_code == 201
+    doc_id = response.json()["id"]
+    get_response = await authorized_client.get(f"/documents/{doc_id}")
+    assert get_response.status_code == 200
+    assert get_response.json()["status"] == "ready"
+    text_response = await authorized_client.get(f"/documents/{doc_id}/text")
+    assert text_response.status_code == 200
+    assert "\x00" not in text_response.text
 
 
 @pytest.mark.asyncio

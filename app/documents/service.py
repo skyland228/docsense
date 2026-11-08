@@ -38,22 +38,27 @@ async def upload_document(
             db=db,
         )
         await db.flush()
-
         if auto_extract:
-            text = await processing.extract_document_text(
-                upload_path,
-                document.content_type,
-            )
-            await repository.fill_text(document.id, text, db)
-            repository.create_version(
-                document_id=document.id,
-                version_number=1,
-                file_path=str(upload_path),
-                extracted_text=text,
-                db=db,
-            )
-            document.status = DocumentStatus.ready
-
+            try:
+                text = await extract_and_fill(
+                    document,
+                    db,
+                )
+                repository.create_version(
+                    document_id=document.id,
+                    version_number=1,
+                    file_path=str(upload_path),
+                    extracted_text=text,
+                    db=db,
+                )
+            except (
+                document_exceptions.DocumentProcessingTimeoutError,
+                document_exceptions.UnsupportedDocumentTypeError,
+                document_exceptions.DocumentDecodeError,
+                document_exceptions.InvalidPdfError,
+            ) as exc:
+                document.status = DocumentStatus.failed
+                document.error = str(exc)
         await db.commit()
     except (
         document_exceptions.FileTooLargeError,
@@ -65,7 +70,6 @@ async def upload_document(
         await db.rollback()
         storage.delete_file(upload_path)
         raise document_exceptions.FailedSaveDocumentError from exc
-
     await db.refresh(document)
     return document
 
@@ -123,6 +127,21 @@ async def get_file(
 
 
 # Document processing
+async def extract_and_fill(
+    document: Document,
+    db: AsyncSession,
+) -> str:
+    file_path = storage.get_file_path(document.stored_filename)
+    text = await processing.extract_document_text(
+        file_path,
+        document.content_type,
+    )
+    await repository.fill_text(document.id, text, db)
+    document.status = DocumentStatus.ready
+    document.error = None
+    return text
+
+
 async def process_document(
     document_id: int,
     user_id: int,
@@ -139,14 +158,7 @@ async def process_document(
     await commit_or_fail(db)
 
     try:
-        file_path = storage.get_file_path(document.stored_filename)
-        text = await processing.extract_document_text(
-            file_path,
-            document.content_type,
-        )
-        await repository.fill_text(document_id, text, db)
-        document.status = DocumentStatus.ready
-        document.error = None
+        await extract_and_fill(document, db)
         await commit_or_fail(db)
     except Exception as exc:
         await db.rollback()
